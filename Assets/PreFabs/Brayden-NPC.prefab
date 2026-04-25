@@ -102,7 +102,7 @@ MonoBehaviour:
   pointA: {x: -21, y: 51}
   pointB: {x: 41, y: 51}
   pointC: {x: -21, y: -66}
-  speed: 100
+  speed: 5
   stopDistance: 1.5
   canMove: 1
   happiness: 100
@@ -133,7 +133,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 1
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!61 &-6291989403352279824
 BoxCollider2D:
   m_ObjectHideFlags: 0
