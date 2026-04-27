@@ -29,8 +29,8 @@ Transform:
   m_GameObject: {fileID: 1412082631589677808}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.8007, y: 0.3583, z: 0}
-  m_LocalScale: {x: 1.1781918, y: 1.145113, z: 1}
+  m_LocalPosition: {x: -1.83098, y: 0.33503, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -55,7 +55,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -76,8 +76,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 5bf087b2b132c47c1806ed708af787a2, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Sprite: {fileID: 7482667652216324306, guid: 75f5f34dc1b5347e0b8351032682f224, type: 3}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -122,7 +122,7 @@ PolygonCollider2D:
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
+    pivot: {x: 0.5, y: 0.28866667}
     oldSize: {x: 1, y: 1}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
@@ -131,26 +131,9 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: 0.340818, y: -0.46506557}
-      - {x: 0.4424743, y: -0.34843165}
-      - {x: 0.47641176, y: -0.2749525}
-      - {x: 0.474292, y: -0.038179822}
-      - {x: 0.41109738, y: 0.07318588}
-      - {x: 0.31431752, y: 0.12390465}
-      - {x: 0.17204124, y: 0.18176973}
-      - {x: 0.15166554, y: 0.3524645}
-      - {x: 0.08974189, y: 0.41820064}
-      - {x: -0.13105096, y: 0.4081238}
-      - {x: -0.19641447, y: 0.3326035}
-      - {x: -0.19488989, y: 0.17362088}
-      - {x: -0.35242492, y: 0.12212311}
-      - {x: -0.43755037, y: 0.026052475}
-      - {x: -0.4631426, y: -0.07151705}
-      - {x: -0.41420153, y: -0.3095248}
-      - {x: -0.1937144, y: -0.46015045}
-      - {x: -0.2768215, y: -0.46312487}
-      - {x: -0.29040632, y: -0.5067378}
-      - {x: 0.34082088, y: -0.5050555}
+    - - {x: 0, y: 0.5773587}
+      - {x: -0.5, y: -0.28866667}
+      - {x: 0.5, y: -0.28866667}
   m_UseDelaunayMesh: 1
 --- !u!114 &7896124313978757536
 MonoBehaviour:
@@ -166,19 +149,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
   currentState: 0
   speed: 2
-  chaseSpeed: 5
+  chaseSpeed: 4
   health: 1
   detectionRadius: 10
   stopDistance: 1.8
-  wallLayer:
-    serializedVersion: 2
-    m_Bits: 64
-  spriteRenderer: {fileID: 5110301055190371548}
-  normalSprite: {fileID: 21300000, guid: 5bf087b2b132c47c1806ed708af787a2, type: 3}
-  attackSprite: {fileID: 21300000, guid: 946c012bbf6994606b472b92fc347de6, type: 3}
-  spawnPrefab: {fileID: 6274833016177128665, guid: 1ec1698bc3b5347a3a96de935be8df25, type: 3}
-  minSpawnTime: 5
-  maxSpawnTime: 12
 --- !u!50 &3934327207114697832
 Rigidbody2D:
   serializedVersion: 4
@@ -205,4 +179,4 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 4
+  m_Constraints: 0
