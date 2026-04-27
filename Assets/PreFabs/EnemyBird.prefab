@@ -77,7 +77,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 75f5f34dc1b5347e0b8351032682f224, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -153,15 +153,6 @@ MonoBehaviour:
   health: 1
   detectionRadius: 10
   stopDistance: 1.8
-  wallLayer:
-    serializedVersion: 2
-    m_Bits: 64
-  spriteRenderer: {fileID: 5110301055190371548}
-  normalSprite: {fileID: 21300000, guid: 70bd62740075ec341b7bfcb4505087be, type: 3}
-  attackSprite: {fileID: 1528042753643376236, guid: e05470de2343e43428aecc1c62689aa7, type: 3}
-  spawnPrefab: {fileID: 6274833016177128665, guid: 1ec1698bc3b5347a3a96de935be8df25, type: 3}
-  minSpawnTime: 5
-  maxSpawnTime: 12
 --- !u!50 &3934327207114697832
 Rigidbody2D:
   serializedVersion: 4
@@ -188,4 +179,4 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 4
+  m_Constraints: 0

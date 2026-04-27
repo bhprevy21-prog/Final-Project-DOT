@@ -22,24 +22,15 @@ public class Enemy : MonoBehaviour
     public float detectionRadius = 10f;
     public float stopDistance = 1.8f;
 
-    [Header("Raycast Settings")]
-    [SerializeField] LayerMask wallLayer;
-
-    [Header("Visuals")]
-    public SpriteRenderer spriteRenderer;
-    public Sprite normalSprite;
-    public Sprite attackSprite;
-
-    [Header("Spawning")]
-    public GameObject spawnPrefab;
-    public float minSpawnTime = 5f;
-    public float maxSpawnTime = 12f;
-
     private Rigidbody2D rb;
     private Transform target;
 
     private float checkTimer = 0f;
     private bool isInvincible = false;
+
+    // =========================
+    // WANDER SYSTEM
+    // =========================
 
     private Vector2 wanderTarget;
 
@@ -51,8 +42,6 @@ public class Enemy : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         PickNewWanderTarget();
-
-        StartCoroutine(SpawnRoutine());
     }
 
     void Update()
@@ -71,17 +60,19 @@ public class Enemy : MonoBehaviour
         HandleState();
     }
 
+    // =========================
+    // STATE HANDLER
+    // =========================
+
     void HandleState()
     {
         switch (currentState)
         {
             case State.Wander:
-                SetAttackVisual(false);
                 Wander();
                 break;
 
             case State.Chase:
-                SetAttackVisual(false);
                 if (target != null)
                 {
                     Vector2 dir = (target.position - transform.position);
@@ -91,12 +82,9 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    void SetAttackVisual(bool attacking)
-    {
-        if (spriteRenderer == null) return;
-
-        spriteRenderer.sprite = attacking ? attackSprite : normalSprite;
-    }
+    // =========================
+    // WANDER (FIXED + SMOOTH)
+    // =========================
 
     void Wander()
     {
@@ -110,6 +98,7 @@ public class Enemy : MonoBehaviour
         }
 
         Vector2 separation = GetSeparationForce();
+
         rb.velocity = (dir.normalized + separation * 1.5f).normalized * speed;
     }
 
@@ -126,6 +115,10 @@ public class Enemy : MonoBehaviour
 
         wanderTarget = A + r1 * (B - A) + r2 * (C - A);
     }
+
+    // =========================
+    // TARGET SCANNING
+    // =========================
 
     void ScanForTargets()
     {
@@ -159,46 +152,59 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    // =========================
+    // STATUE ATTACK (+ CORRUPTION)
+    // =========================
+
     IEnumerator AttackStatue()
+{
+    currentState = State.AttackingStatue;
+
+    while (target != null && health > 0)
     {
-        currentState = State.AttackingStatue;
-        SetAttackVisual(true);
+        float dist = Vector2.Distance(transform.position, target.position);
 
-        while (target != null && health > 0)
-        {
-            float dist = Vector2.Distance(transform.position, target.position);
+if (dist > stopDistance)
+{
+    Vector2 dir = (target.position - transform.position).normalized;
 
-            if (dist > stopDistance)
-            {
-                Vector2 dir = (target.position - transform.position).normalized;
-                rb.velocity = dir * chaseSpeed;
-            }
-            else
-            {
-                rb.velocity = Vector2.zero;
+    // ✅ STOP BEFORE ENTERING
+    rb.velocity = dir * chaseSpeed;
+}
+else
+{
+    // ✅ HARD STOP (THIS IS WHAT YOU WERE MISSING)
+    rb.velocity = Vector2.zero;
 
-                StatueHealth statue = target.GetComponent<StatueHealth>();
-                if (statue != null)
-                {
-                    statue.TakeDamage(5);
-                    if (Random.value <= 0.1f)
-                        statue.isClean = false;
-                }
+    // push slightly away so they don’t sink in
+    Vector2 pushBack = (transform.position - target.position).normalized;
+    transform.position += (Vector3)(pushBack * 0.05f);
 
-                yield return new WaitForSeconds(1f);
-            }
+    StatueHealth statue = target.GetComponent<StatueHealth>();
 
-            yield return null;
-        }
+    if (statue != null)
+    {
+        statue.TakeDamage(5);
 
-        SetAttackVisual(false);
-        currentState = State.Wander;
+        if (Random.value <= 0.1f)
+            statue.isClean = false;
     }
+
+    yield return new WaitForSeconds(1f);
+}
+
+        yield return null;
+    }
+
+    currentState = State.Wander;
+}
+    // =========================
+    // PLAYER ATTACK
+    // =========================
 
     IEnumerator AttackPlayer()
     {
         currentState = State.AttackingPlayer;
-        SetAttackVisual(true);
 
         PlayerMovement2D move = target.GetComponent<PlayerMovement2D>();
         PlayerShoot shoot = target.GetComponent<PlayerShoot>();
@@ -221,23 +227,7 @@ public class Enemy : MonoBehaviour
 
                 isInvincible = true;
 
-                float maxDistance = 100f;
-                float padding = 1f;
-
-                RaycastHit2D hitRight = Physics2D.Raycast(transform.position, Vector2.right, maxDistance, wallLayer);
-                RaycastHit2D hitLeft = Physics2D.Raycast(transform.position, Vector2.left, maxDistance, wallLayer);
-                RaycastHit2D hitUp = Physics2D.Raycast(transform.position, Vector2.up, maxDistance, wallLayer);
-                RaycastHit2D hitDown = Physics2D.Raycast(transform.position, Vector2.down, maxDistance, wallLayer);
-
-                float minX = hitLeft ? hitLeft.point.x + padding : transform.position.x - 10f;
-                float maxX = hitRight ? hitRight.point.x - padding : transform.position.x + 10f;
-                float minY = hitDown ? hitDown.point.y + padding : transform.position.y - 10f;
-                float maxY = hitUp ? hitUp.point.y - padding : transform.position.y + 10f;
-
-                Vector2 randomPos = new Vector2(
-                    Random.Range(minX, maxX),
-                    Random.Range(minY, maxY)
-                );
+                Vector2 randomPos = new Vector2(Random.Range(-20, 40), Random.Range(-60, 50));
 
                 float timer = 0f;
 
@@ -258,20 +248,23 @@ public class Enemy : MonoBehaviour
                 yield return new WaitForSeconds(2f);
 
                 isInvincible = false;
+
                 break;
             }
 
             yield return null;
         }
 
-        SetAttackVisual(false);
         currentState = State.Wander;
     }
+
+    // =========================
+    // NPC ATTACK
+    // =========================
 
     IEnumerator AttackNPC()
     {
         currentState = State.AttackingNPC;
-        SetAttackVisual(true);
 
         NPC npc = target.GetComponent<NPC>();
 
@@ -287,6 +280,7 @@ public class Enemy : MonoBehaviour
             else
             {
                 rb.velocity = Vector2.zero;
+
                 npc.canMove = false;
                 npc.HitBird();
 
@@ -296,23 +290,12 @@ public class Enemy : MonoBehaviour
             yield return null;
         }
 
-        SetAttackVisual(false);
         currentState = State.Wander;
     }
 
-    IEnumerator SpawnRoutine()
-    {
-        while (true)
-        {
-            float waitTime = Random.Range(minSpawnTime, maxSpawnTime);
-            yield return new WaitForSeconds(waitTime);
-
-            if (spawnPrefab != null)
-            {
-                Instantiate(spawnPrefab, transform.position, Quaternion.identity);
-            }
-        }
-    }
+    // =========================
+    // DAMAGE
+    // =========================
 
     public void TakeDamage(int dmg)
     {
@@ -329,6 +312,10 @@ public class Enemy : MonoBehaviour
             currentState = State.Chase;
         }
     }
+
+    // =========================
+    // ENRAGED DEATH RUN
+    // =========================
 
     IEnumerator EnragedRun()
     {
@@ -347,27 +334,32 @@ public class Enemy : MonoBehaviour
         Destroy(gameObject);
     }
 
+    // =========================
+    // SEPARATION SYSTEM
+    // =========================
+
     Vector2 GetSeparationForce()
+{
+    Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, 1.5f);
+
+    Vector2 force = Vector2.zero;
+
+    foreach (var hit in hits)
     {
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, 1.5f);
+        if (hit.gameObject == gameObject) continue;
 
-        Vector2 force = Vector2.zero;
+        Vector2 diff = (Vector2)transform.position - (Vector2)hit.transform.position;
+        float dist = Mathf.Max(diff.magnitude, 0.1f);
 
-        foreach (var hit in hits)
-        {
-            if (hit.gameObject == gameObject) continue;
+        float strength = 1f;
 
-            Vector2 diff = (Vector2)transform.position - (Vector2)hit.transform.position;
-            float dist = Mathf.Max(diff.magnitude, 0.1f);
+        // ✅ STRONGER PUSH FROM STATUE
+        if (hit.CompareTag("Statue"))
+            strength = 3f;
 
-            float strength = 1f;
-
-            if (hit.CompareTag("Statue"))
-                strength = 3f;
-
-            force += diff.normalized * (strength / dist);
-        }
-
-        return force;
+        force += diff.normalized * (strength / dist);
     }
+
+    return force;
+}
 }
