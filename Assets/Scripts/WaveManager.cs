@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Collections;
 
 public class WaveManager : MonoBehaviour
 {
@@ -9,64 +8,29 @@ public class WaveManager : MonoBehaviour
         Build
     }
 
-    public GameObject startWaveButton;
+    [Header("Mode")]
     public GameMode currentMode;
 
-    [Header("Prefabs")]
+    [Header("References")]
+    public GameObject startWaveButton;
     public GameObject enemyPrefab;
     public GameObject npcPrefab;
 
     [Header("Spawn Points")]
     public Transform[] spawnPoints;
 
-    [Header("UI / Systems")]
+    [Header("Systems")]
     public CoinUI coinUI;
     public StatueHealth statue;
 
+    [Header("Stats")]
     public int playerMoney = 0;
+    public int currentWave = 1;
 
-    private int currentWave = 1;
+    private int previousEnemyCount = 10;
+    private int enemiesThisWave = 10;
 
-    private int enemiesAlive = 0;
-    private int enemiesThisWave = 0;
-
-    private int npcsAlive = 0;
-    private int npcsThisWave = 0;
-
-    private int positiveReviews = 0;
-    private int negativeReviews = 0;
-
-    private int spawnIndex = 0;
-
-    private bool spawningFinished = false;
-
-    private bool isNightWave = false;
-    public bool statueTriggeredThisWave = false;
-
-    // =========================
-    // WAVE SECTION SYSTEM
-    // =========================
-
-    [System.Serializable]
-    public class WaveSection
-    {
-        public GameObject enemyPrefab;
-        public int count = 3;
-        public float spawnDelay = 0.5f;
-        public float sectionDelay = 2f;
-    }
-
-    [System.Serializable]
-    public class WaveData
-    {
-        public WaveSection[] sections;
-    }
-
-    public WaveData[] waveData;
-
-    // =========================
-    // START
-    // =========================
+    private bool waveActive = false;
 
     void Start()
     {
@@ -75,155 +39,87 @@ public class WaveManager : MonoBehaviour
         StartWave();
     }
 
-    // =========================
-    // WAVE START
-    // =========================
+    void Update()
+    {
+        // debug money
+        if (Input.GetKeyDown(KeyCode.Backslash))
+        {
+            AddMoney(1000);
+        }
+
+        // check if wave is over
+        if (waveActive)
+        {
+            CheckWaveEnd();
+        }
+    }
 
     void StartWave()
     {
-        statueTriggeredThisWave = false;
         currentMode = GameMode.Wave;
+        waveActive = true;
 
         if (startWaveButton != null)
             startWaveButton.SetActive(false);
 
-        positiveReviews = 0;
-        negativeReviews = 0;
-
-        enemiesAlive = 0;
-        enemiesThisWave = 0;
-
-        npcsAlive = GetNPCCountForWave(currentWave);
-        npcsThisWave = npcsAlive;
-
-        spawningFinished = false;
-
-        isNightWave = (currentWave % 3 == 0);
-
-        Debug.Log("WAVE " + currentWave + " STARTING");
-        Debug.Log(isNightWave ? "🌙 NIGHT WAVE" : "☀ NORMAL WAVE");
-
-        StartCoroutine(SpawnWaveSections());
-    }
-
-    // =========================
-    // PvZ SECTION SPAWNING
-    // =========================
-
-    IEnumerator SpawnWaveSections()
-{
-    int totalEnemies = GetEnemyCountForWave(currentWave);
-    int spawned = 0;
-
-    // =========================
-    // WAVES 1–3 (SCRIPTED)
-    // =========================
-    if (currentWave <= 3 && currentWave - 1 < waveData.Length)
-    {
-        WaveData wave = waveData[currentWave - 1];
-
-        foreach (WaveSection section in wave.sections)
+        // calculate enemy amount
+        if (currentWave == 1)
         {
-            int sectionCount = Mathf.Min(section.count, totalEnemies - spawned);
-
-            for (int i = 0; i < sectionCount; i++)
-            {
-                SpawnEnemy(section.enemyPrefab);
-
-                enemiesAlive++;
-                enemiesThisWave++;
-                spawned++;
-
-                yield return new WaitForSeconds(section.spawnDelay);
-            }
-
-            yield return new WaitForSeconds(section.sectionDelay);
+            enemiesThisWave = 10;
         }
-    }
-    // =========================
-    // WAVES 4+ (ENDLESS PROCEDURAL)
-    // =========================
-    else
-    {
-        float spawnDelay = Mathf.Max(0.2f, 1.0f - (currentWave * 0.02f));
-
-        while (spawned < totalEnemies)
+        else
         {
-            SpawnEnemy(enemyPrefab);
+            enemiesThisWave =
+                Mathf.Min(
+                    Mathf.RoundToInt(previousEnemyCount * 1.5f) + Random.Range(1, 4),
+                    999
+                );
+        }
 
-            enemiesAlive++;
-            enemiesThisWave++;
-            spawned++;
+        previousEnemyCount = enemiesThisWave;
 
-            yield return new WaitForSeconds(spawnDelay);
+        Debug.Log("Wave " + currentWave);
+        Debug.Log("Enemies spawning: " + enemiesThisWave);
+
+        SpawnEnemies();
+        SpawnNPCs();
+    }
+
+    void SpawnEnemies()
+    {
+        for (int i = 0; i < enemiesThisWave; i++)
+        {
+            Transform spawn = spawnPoints[Random.Range(0, spawnPoints.Length)];
+            Instantiate(enemyPrefab, spawn.position, Quaternion.identity);
         }
     }
 
-    // =========================
-    // NPC SPAWN
-    // =========================
-    for (int i = 0; i < npcsThisWave; i++)
+    void SpawnNPCs()
     {
-        SpawnNPC();
-    }
+        int npcCount = Mathf.Clamp(currentWave, 1, 10);
 
-    spawningFinished = true;
-}
+        for (int i = 0; i < npcCount; i++)
+        {
+            Vector2 spawnPos = new Vector2(
+                Random.Range(-20, 40),
+                Random.Range(-60, 50)
+            );
 
-    void SpawnEnemy(GameObject prefab)
-    {
-        Transform spawn = spawnPoints[spawnIndex];
-        Instantiate(prefab, spawn.position, Quaternion.identity);
-
-        spawnIndex++;
-        if (spawnIndex >= spawnPoints.Length)
-            spawnIndex = 0;
-    }
-
-    void SpawnNPC()
-    {
-        Vector2 spawnPos = new Vector2(Random.Range(-20, 40), Random.Range(-60, 50));
-        Instantiate(npcPrefab, spawnPos, Quaternion.identity);
-    }
-
-    // =========================
-    // TRACKING
-    // =========================
-
-    public void EnemyDied()
-    {
-        enemiesAlive--;
-        CheckWaveEnd();
-    }
-
-    public void NPCFinishedPositive()
-    {
-        npcsAlive--;
-        positiveReviews++;
-        CheckWaveEnd();
-    }
-
-    public void NPCFinishedNegative()
-    {
-        npcsAlive--;
-        negativeReviews++;
-        CheckWaveEnd();
+            Instantiate(npcPrefab, spawnPos, Quaternion.identity);
+        }
     }
 
     void CheckWaveEnd()
     {
-        if (!spawningFinished)
-            return;
+        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        GameObject[] npcs = GameObject.FindGameObjectsWithTag("NPC");
 
-        if (enemiesAlive <= 0 && npcsAlive <= 0)
+        if (enemies.Length == 0 && npcs.Length == 0)
         {
+            waveActive = false;
             EnterBuildMode();
         }
     }
-
-    // =========================
-    // BUILD MODE
-    // =========================
 
     void EnterBuildMode()
     {
@@ -232,19 +128,13 @@ public class WaveManager : MonoBehaviour
         if (statue != null)
             statue.Heal(50);
 
-        int enemyMoney = enemiesThisWave * 5;
-        int positiveBonus = positiveReviews * 10;
-        int negativePenalty = negativeReviews * 5;
-
-        AddMoney(enemyMoney + positiveBonus - negativePenalty);
+        AddMoney(enemiesThisWave * 5);
 
         if (startWaveButton != null)
             startWaveButton.SetActive(true);
-    }
 
-    // =========================
-    // NEXT WAVE
-    // =========================
+        Debug.Log("Wave cleared!");
+    }
 
     public void StartNextWave()
     {
@@ -254,10 +144,6 @@ public class WaveManager : MonoBehaviour
         currentWave++;
         StartWave();
     }
-
-    // =========================
-    // MONEY
-    // =========================
 
     public void AddMoney(int amount)
     {
@@ -270,51 +156,4 @@ public class WaveManager : MonoBehaviour
         if (coinUI != null)
             coinUI.SetCoins(playerMoney);
     }
-
-    // =========================
-    // WAVE COUNT SYSTEM
-    // =========================
-
-    int GetEnemyCountForWave(int wave)
-    {
-        // FIXED WAVES
-        if (wave == 1) return 10;
-        if (wave == 2) return 15;
-        if (wave == 3) return 30;
-
-        // NIGHT WAVE CHECK
-        bool isNightWaveLocal = (wave % 3 == 0);
-
-        float baseValue = wave * 10f;
-        float multiplier;
-
-        if (isNightWaveLocal)
-            multiplier = Random.Range(1.3f, 1.75f);
-        else
-            multiplier = Random.Range(1.0f, 1.25f);
-
-        return Mathf.CeilToInt(baseValue * multiplier);
-    }
-
-    int GetNPCCountForWave(int wave)
-    {
-        if (wave == 1) return 1;
-        if (wave == 2) return 2;
-        if (wave == 3) return 3;
-
-        return 1;
-    }
-
-    // =========================
-    // DEBUG
-    // =========================
-
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Backslash))
-        {
-            AddMoney(1000);
-        }
-    }
-
 }

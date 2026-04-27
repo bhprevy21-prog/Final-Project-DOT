@@ -106,6 +106,8 @@ MonoBehaviour:
   stopDistance: 1.5
   canMove: 1
   happiness: 100
+  possibleSprites:
+  - {fileID: 0}
   statueTriggeredThisWave: 0
 --- !u!50 &-2572057576139579644
 Rigidbody2D:

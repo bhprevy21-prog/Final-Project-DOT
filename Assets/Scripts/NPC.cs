@@ -15,7 +15,8 @@ public class NPC : MonoBehaviour
 
     [Header("Happiness")]
     public int happiness = 100;
-
+[Header("Visual")]
+public Sprite[] possibleSprites;
     private Vector2 targetPoint;
     private float aliveTime = 0f;
 
@@ -34,7 +35,7 @@ public class NPC : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
 
-        SetRandomColor();
+       SetRandomSprite();
         PickNewTarget();
     }
 
@@ -206,33 +207,35 @@ public class NPC : MonoBehaviour
     // REVIEWS
     // =========================
 
-    void GiveNegativeReview()
-    {
-        if (hasReported) return;
-        hasReported = true;
+ void GiveNegativeReview()
+{
+    if (hasReported) return;
+    hasReported = true;
 
-        WaveManager wm = FindFirstObjectByType<WaveManager>();
-        if (wm != null)
-            wm.NPCFinishedNegative();
-    }
+    Debug.Log("NPC left unhappy");
+}
 
-    void GivePositiveReview()
-    {
-        if (hasReported) return;
-        hasReported = true;
+void GivePositiveReview()
+{
+    if (hasReported) return;
+    hasReported = true;
 
-        WaveManager wm = FindFirstObjectByType<WaveManager>();
-        if (wm != null)
-            wm.NPCFinishedPositive();
-    }
-
+    Debug.Log("NPC left happy");
+}
     // =========================
     // VISUAL
     // =========================
 
-    void SetRandomColor()
-    {
-        GetComponent<SpriteRenderer>().color =
-            new Color(Random.value, Random.value, Random.value);
-    }
+    void SetRandomSprite()
+{
+    SpriteRenderer sr = GetComponent<SpriteRenderer>();
+
+    if (sr == null)
+        return;
+
+    if (possibleSprites == null || possibleSprites.Length == 0)
+        return;
+
+    sr.sprite = possibleSprites[Random.Range(0, possibleSprites.Length)];
+}
 }
