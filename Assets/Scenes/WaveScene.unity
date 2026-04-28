@@ -4104,8 +4104,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "Open The \nPark"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: d14c12db72a54467498438ec2c45f0fa, type: 2}
-  m_sharedMaterial: {fileID: -3599491679094039367, guid: d14c12db72a54467498438ec2c45f0fa, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 1624c58a2d3ab4889804666a3e4dbfce, type: 2}
+  m_sharedMaterial: {fileID: 3056828232136261527, guid: 1624c58a2d3ab4889804666a3e4dbfce, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -4129,7 +4129,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 25.45
+  m_fontSize: 36.2
   m_fontSizeBase: 24
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -4165,7 +4165,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 5.7307987}
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -4875,8 +4875,8 @@ MonoBehaviour:
 
 '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: d14c12db72a54467498438ec2c45f0fa, type: 2}
-  m_sharedMaterial: {fileID: -3599491679094039367, guid: d14c12db72a54467498438ec2c45f0fa, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -5165,15 +5165,15 @@ MonoBehaviour:
       m_Calls: []
   m_text: Statue Health
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 09702a968a43e4f4cbfa35fa9954169d, type: 2}
-  m_sharedMaterial: {fileID: 1114714697225923902, guid: 09702a968a43e4f4cbfa35fa9954169d, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 2e498d1c8094910479dc3e1b768306a4, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 2e498d1c8094910479dc3e1b768306a4, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 4282350926
+  m_fontColor: {r: 0.30571905, g: 0.49056602, b: 0.24759701, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -5190,7 +5190,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 27.25
+  m_fontSize: 44.5
   m_fontSizeBase: 24
   m_fontWeight: 400
   m_enableAutoSizing: 1
