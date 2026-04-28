@@ -9,12 +9,19 @@ public class NPC : MonoBehaviour
     public Vector2 pointC = new Vector2(-21, -66);
 
     [Header("Movement")]
-    public float speed = 1f;
+    public float speed = 75f;
     public float stopDistance = 1.5f;
     public bool canMove = true;
 
     [Header("Happiness")]
     public int happiness = 100;
+    [Header("Panic State")]
+public float panicSpeed = 125f;
+
+private bool isPanicking = false;
+private Vector2 panicDirection;
+private bool touchingBorder = false;
+private float borderTimer = 0f;
 [Header("Visual")]
 public Sprite[] possibleSprites;
     private Vector2 targetPoint;
@@ -43,28 +50,40 @@ public Sprite[] possibleSprites;
     // UPDATE
     // =========================
 
-    void Update()
+   void Update()
+{
+    aliveTime += Time.deltaTime;
+
+    if (isPanicking && touchingBorder)
     {
-        aliveTime += Time.deltaTime;
+        borderTimer -= Time.deltaTime;
 
-        if (leaving)
+        if (borderTimer <= 0f)
         {
-            MoveToExit();
-            return;
+            Destroy(gameObject);
         }
-
-        HandleMovement();
-        HandleLifeChecks();
     }
 
-    // =========================
-    // MOVEMENT (FIXED)
-    // =========================
+    if (leaving)
+    {
+        MoveToExit();
+        return;
+    }
+
+    HandleMovement();
+    HandleLifeChecks();
+}
 
     void HandleMovement()
 {
     if (!canMove)
         return;
+
+    if (isPanicking)
+    {
+        HandlePanicMovement();
+        return;
+    }
 
     Vector2 toTarget = targetPoint - rb.position;
     float dist = toTarget.magnitude;
@@ -75,13 +94,14 @@ public Sprite[] possibleSprites;
         return;
     }
 
-    // ✅ CONSTANT SPEED (NO ACCELERATION, NO SNAP)
     Vector2 newPos = Vector2.MoveTowards(rb.position, targetPoint, speed * Time.deltaTime);
-
-    // ✅ add light separation so they don’t stack
     Vector2 separation = GetSeparationForce() * 0.2f;
 
     rb.MovePosition(newPos + separation * Time.deltaTime);
+}
+void HandlePanicMovement()
+{
+    rb.MovePosition(rb.position + panicDirection * panicSpeed * Time.deltaTime);
 }
 
     void PickNewTarget()
@@ -173,10 +193,16 @@ public Sprite[] possibleSprites;
         statueTriggeredThisWave = true;
         canMove = false;
 
-        if (isClean)
-            happiness += 20;
-        else
-            happiness -= 50;
+       if (isPanicking)
+    return;
+
+if (isClean)
+    happiness = Mathf.Min(happiness + 20, 100);
+else
+{
+    happiness -= 50;
+    if (happiness < 0) happiness = 0;
+}
 
         happiness = Mathf.Clamp(happiness, 0, 100);
 
@@ -198,14 +224,27 @@ public Sprite[] possibleSprites;
     public void HitPoop() => ModifyHappiness(-10);
     public void HitBullet() => ModifyHappiness(-20);
 
-    void ModifyHappiness(int amount)
-    {
-        happiness += amount;
-    }
+void ModifyHappiness(int amount)
+{
+    if (isPanicking)
+        return;
 
-    // =========================
-    // REVIEWS
-    // =========================
+    happiness += amount;
+
+    if (happiness <= 0)
+    {
+        happiness = 0;
+        EnterPanicMode();
+    }
+}
+
+   void EnterPanicMode()
+{
+    isPanicking = true;
+    canMove = true;
+
+    panicDirection = Random.insideUnitCircle.normalized;
+}
 
  void GiveNegativeReview()
 {
@@ -237,5 +276,25 @@ void GivePositiveReview()
         return;
 
     sr.sprite = possibleSprites[Random.Range(0, possibleSprites.Length)];
+}
+void OnTriggerEnter2D(Collider2D other)
+{
+    if (!isPanicking)
+        return;
+
+    if (other.CompareTag("Border"))
+    {
+        touchingBorder = true;
+        borderTimer = 2f;
+    }
+}
+
+void OnTriggerExit2D(Collider2D other)
+{
+    if (other.CompareTag("Border"))
+    {
+        touchingBorder = false;
+        borderTimer = 0f;
+    }
 }
 }

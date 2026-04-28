@@ -5,11 +5,16 @@ public class Bullet : MonoBehaviour
     public float speed = 10f;
     public float lifeTime = 2f;
 
-    private Vector2 direction;
+    private Rigidbody2D rb;
 
     public void SetDirection(Vector2 dir)
     {
-        direction = dir.normalized;
+        rb.velocity = dir.normalized * speed;
+    }
+
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody2D>();
     }
 
     void Start()
@@ -17,28 +22,22 @@ public class Bullet : MonoBehaviour
         Destroy(gameObject, lifeTime);
     }
 
-    void Update()
-    {
-        transform.Translate(direction * speed * Time.deltaTime);
-    }
-
     void OnTriggerEnter2D(Collider2D collision)
     {
-        // 🔴 ENEMY HIT
+        if (collision.CompareTag("Player"))
+            return;
+
         if (collision.CompareTag("Enemy"))
         {
             Enemy enemy = collision.GetComponent<Enemy>();
 
             if (enemy != null)
-            {
-                enemy.TakeDamage(1); // better than instant destroy
-            }
+                enemy.TakeDamage(1);
 
             Destroy(gameObject);
             return;
         }
 
-        // 🧍 NPC HIT
         NPC npc = collision.GetComponent<NPC>();
         if (npc != null)
         {
@@ -46,12 +45,11 @@ public class Bullet : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-       
-if (collision.CompareTag("Statue"))
-{
 
-    Destroy(gameObject);
-    return;
-}
+        if (collision.CompareTag("Statue"))
+        {
+            Destroy(gameObject);
+            return;
+        }
     }
 }
