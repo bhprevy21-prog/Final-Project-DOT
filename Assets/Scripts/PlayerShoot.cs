@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class PlayerShoot : MonoBehaviour
 {
@@ -7,31 +8,46 @@ public class PlayerShoot : MonoBehaviour
     public ShootSound shootSound;
     public bool canShoot = true;
 
-    void Update()
-{
-    if (!canShoot) return;
+    [Header("Bullet Spawn")]
+    public float spawnOffset = 1f;
 
-    if (Input.GetMouseButtonDown(0))
+    void Update()
     {
-        Shoot();
+        if (!canShoot)
+            return;
+
+        // don't shoot while clicking UI
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            return;
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            Shoot();
+        }
     }
-}
 
     void Shoot()
-{
-    Debug.Log("SHOOTING");
+    {
+        Debug.Log("SHOOTING");
 
-    Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-    mousePos.z = 0f;
+        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        mousePos.z = 0f;
 
-    Vector2 direction = (mousePos - firePoint.position);
+        Vector2 direction = (mousePos - firePoint.position).normalized;
 
-    GameObject bullet = Instantiate(bulletPrefab, firePoint.position, Quaternion.identity);
+        // spawn bullet slightly in front of player
+        Vector2 spawnPos =
+            (Vector2)firePoint.position + direction * spawnOffset;
 
-    bullet.GetComponent<Bullet>().SetDirection(direction);
+        GameObject bullet =
+            Instantiate(bulletPrefab, spawnPos, Quaternion.identity);
 
-    // 🔊 PLAY SOUND
-    if (shootSound != null)
-        shootSound.PlayShootSound();
-}
+        Bullet bulletScript = bullet.GetComponent<Bullet>();
+
+        if (bulletScript != null)
+            bulletScript.SetDirection(direction);
+
+        if (shootSound != null)
+            shootSound.PlayShootSound();
+    }
 }

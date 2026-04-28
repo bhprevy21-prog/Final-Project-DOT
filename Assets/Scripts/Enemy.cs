@@ -6,14 +6,9 @@ public class Enemy : MonoBehaviour
     public enum State
     {
         Wander,
-        Chase,
-        AttackingStatue,
-        AttackingPlayer,
-        AttackingNPC,
+        Attack,
         Enraged
     }
-
-    public State currentState = State.Wander;
 
     [Header("Stats")]
     public float speed = 2f;
@@ -30,16 +25,20 @@ public class Enemy : MonoBehaviour
     public Sprite normalSprite;
     public Sprite attackSprite;
 
-    [Header("Spawning")]
+    [Header("Poop")]
     public GameObject spawnPrefab;
-    public float minSpawnTime = 5f;
-    public float maxSpawnTime = 12f;
+    [Range(0f, 1f)] public float poopChance = 0.15f;
+
+    [Header("Scan")]
+    public float scanCooldown = 2f;
 
     private Rigidbody2D rb;
     private Transform target;
+    private Coroutine currentRoutine;
 
-    private float checkTimer = 0f;
+    private float scanTimer;
     private bool isInvincible = false;
+    private bool hasDroppedPoop = false;
 
     private Vector2 wanderTarget;
 
@@ -47,12 +46,13 @@ public class Enemy : MonoBehaviour
     private Vector2 B = new Vector2(41, 51);
     private Vector2 C = new Vector2(-21, -66);
 
+    public State currentState = State.Wander;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         PickNewWanderTarget();
-
-        StartCoroutine(SpawnRoutine());
+        scanTimer = scanCooldown;
     }
 
     void Update()
@@ -60,47 +60,74 @@ public class Enemy : MonoBehaviour
         if (currentState == State.Enraged)
             return;
 
-        checkTimer += Time.deltaTime;
+        scanTimer -= Time.deltaTime;
 
-        if (checkTimer >= Random.Range(10f, 15f))
+        if (scanTimer <= 0f)
         {
-            checkTimer = 0f;
+            scanTimer = scanCooldown;
             ScanForTargets();
         }
 
-        HandleState();
+        if (currentState == State.Wander)
+            Wander();
+
+        TryDropPoop();
     }
 
-    void HandleState()
+    void ScanForTargets()
     {
-        switch (currentState)
+        if (currentState == State.Attack)
+            return;
+
+        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, detectionRadius);
+
+        Transform bestTarget = null;
+        int bestPriority = -1;
+
+        foreach (Collider2D hit in hits)
         {
-            case State.Wander:
-                SetAttackVisual(false);
-                Wander();
-                break;
+            int priority = -1;
 
-            case State.Chase:
-                SetAttackVisual(false);
-                if (target != null)
-                {
-                    Vector2 dir = (target.position - transform.position);
-                    rb.velocity = dir.normalized * chaseSpeed;
-                }
-                break;
+            // Player > NPC > Statue
+            if (hit.CompareTag("Player")) priority = 3;
+            else if (hit.GetComponent<NPC>() != null) priority = 2;
+            else if (hit.CompareTag("Statue")) priority = 1;
+
+            if (priority > bestPriority)
+            {
+                bestPriority = priority;
+                bestTarget = hit.transform;
+            }
         }
+
+        if (bestTarget == null)
+            return;
+
+        target = bestTarget;
+
+        if (target.CompareTag("Player"))
+            StartBehavior(AttackPlayer());
+
+        else if (target.GetComponent<NPC>() != null)
+            StartBehavior(AttackNPC());
+
+        else if (target.CompareTag("Statue"))
+            StartBehavior(AttackStatue());
     }
 
-    void SetAttackVisual(bool attacking)
+    void StartBehavior(IEnumerator routine)
     {
-        if (spriteRenderer == null) return;
+        if (currentRoutine != null)
+            StopCoroutine(currentRoutine);
 
-        spriteRenderer.sprite = attacking ? attackSprite : normalSprite;
+        currentRoutine = StartCoroutine(routine);
     }
 
     void Wander()
     {
-        Vector2 dir = (wanderTarget - rb.position);
+        SetAttackVisual(false);
+
+        Vector2 dir = wanderTarget - rb.position;
         float dist = dir.magnitude;
 
         if (dist < 0.5f)
@@ -127,44 +154,14 @@ public class Enemy : MonoBehaviour
         wanderTarget = A + r1 * (B - A) + r2 * (C - A);
     }
 
-    void ScanForTargets()
-    {
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, detectionRadius);
-
-        Transform bestTarget = null;
-        int bestPriority = -1;
-
-        foreach (var hit in hits)
-        {
-            int priority = -1;
-
-            if (hit.CompareTag("Statue")) priority = 0;
-            if (hit.CompareTag("Player")) priority = 1;
-            if (hit.GetComponent<NPC>() != null) priority = 2;
-
-            if (priority > bestPriority)
-            {
-                bestPriority = priority;
-                bestTarget = hit.transform;
-            }
-        }
-
-        if (bestTarget != null)
-        {
-            target = bestTarget;
-
-            if (bestPriority == 0) StartCoroutine(AttackStatue());
-            if (bestPriority == 1) StartCoroutine(AttackPlayer());
-            if (bestPriority == 2) StartCoroutine(AttackNPC());
-        }
-    }
-
     IEnumerator AttackStatue()
     {
-        currentState = State.AttackingStatue;
+        currentState = State.Attack;
         SetAttackVisual(true);
 
-        while (target != null && health > 0)
+        StatueHealth statue = target.GetComponent<StatueHealth>();
+
+        while (target != null && statue != null)
         {
             float dist = Vector2.Distance(transform.position, target.position);
 
@@ -177,13 +174,10 @@ public class Enemy : MonoBehaviour
             {
                 rb.velocity = Vector2.zero;
 
-                StatueHealth statue = target.GetComponent<StatueHealth>();
-                if (statue != null)
-                {
-                    statue.TakeDamage(5);
-                    if (Random.value <= 0.1f)
-                        statue.isClean = false;
-                }
+                statue.TakeDamage(5);
+
+                if (Random.value <= 0.10f)
+                    statue.isClean = false;
 
                 yield return new WaitForSeconds(1f);
             }
@@ -191,13 +185,12 @@ public class Enemy : MonoBehaviour
             yield return null;
         }
 
-        SetAttackVisual(false);
-        currentState = State.Wander;
+        ExitAttack();
     }
 
     IEnumerator AttackPlayer()
     {
-        currentState = State.AttackingPlayer;
+        currentState = State.Attack;
         SetAttackVisual(true);
 
         PlayerMovement2D move = target.GetComponent<PlayerMovement2D>();
@@ -205,7 +198,7 @@ public class Enemy : MonoBehaviour
 
         while (target != null)
         {
-            Vector2 toTarget = (target.position - transform.position);
+            Vector2 toTarget = target.position - transform.position;
             float dist = toTarget.magnitude;
 
             if (dist > stopDistance)
@@ -221,32 +214,19 @@ public class Enemy : MonoBehaviour
 
                 isInvincible = true;
 
-                float maxDistance = 100f;
-                float padding = 1f;
-
-                RaycastHit2D hitRight = Physics2D.Raycast(transform.position, Vector2.right, maxDistance, wallLayer);
-                RaycastHit2D hitLeft = Physics2D.Raycast(transform.position, Vector2.left, maxDistance, wallLayer);
-                RaycastHit2D hitUp = Physics2D.Raycast(transform.position, Vector2.up, maxDistance, wallLayer);
-                RaycastHit2D hitDown = Physics2D.Raycast(transform.position, Vector2.down, maxDistance, wallLayer);
-
-                float minX = hitLeft ? hitLeft.point.x + padding : transform.position.x - 10f;
-                float maxX = hitRight ? hitRight.point.x - padding : transform.position.x + 10f;
-                float minY = hitDown ? hitDown.point.y + padding : transform.position.y - 10f;
-                float maxY = hitUp ? hitUp.point.y - padding : transform.position.y + 10f;
-
-                Vector2 randomPos = new Vector2(
-                    Random.Range(minX, maxX),
-                    Random.Range(minY, maxY)
-                );
+                Vector2 randomPos = GetRandomCarryPosition();
 
                 float timer = 0f;
 
-                while (timer < 2f)
+                while (timer < 2f && target != null)
                 {
-                    transform.position = Vector2.MoveTowards(transform.position, randomPos, 5f * Time.deltaTime);
+                    transform.position = Vector2.MoveTowards(
+                        transform.position,
+                        randomPos,
+                        5f * Time.deltaTime
+                    );
 
-                    if (target != null)
-                        target.position = transform.position;
+                    target.position = transform.position;
 
                     timer += Time.deltaTime;
                     yield return null;
@@ -255,29 +235,28 @@ public class Enemy : MonoBehaviour
                 if (move != null) move.canMove = true;
                 if (shoot != null) shoot.canShoot = true;
 
-                yield return new WaitForSeconds(2f);
-
                 isInvincible = false;
+
+                yield return new WaitForSeconds(1f);
                 break;
             }
 
             yield return null;
         }
 
-        SetAttackVisual(false);
-        currentState = State.Wander;
+        ExitAttack();
     }
 
     IEnumerator AttackNPC()
     {
-        currentState = State.AttackingNPC;
+        currentState = State.Attack;
         SetAttackVisual(true);
 
         NPC npc = target.GetComponent<NPC>();
 
         while (npc != null)
         {
-            Vector2 toTarget = (npc.transform.position - transform.position);
+            Vector2 toTarget = npc.transform.position - transform.position;
             float dist = toTarget.magnitude;
 
             if (dist > stopDistance)
@@ -287,31 +266,90 @@ public class Enemy : MonoBehaviour
             else
             {
                 rb.velocity = Vector2.zero;
+
                 npc.canMove = false;
-                npc.HitBird();
+
+                Vector2 randomPos = GetRandomCarryPosition();
+
+                float timer = 0f;
+
+                while (timer < 3f && npc != null)
+                {
+                    transform.position = Vector2.MoveTowards(
+                        transform.position,
+                        randomPos,
+                        5f * Time.deltaTime
+                    );
+
+                    npc.transform.position = transform.position;
+
+                    timer += Time.deltaTime;
+                    yield return null;
+                }
+
+                if (npc != null)
+                {
+                    npc.canMove = true;
+                    npc.HitBird();
+                }
 
                 yield return new WaitForSeconds(1f);
+                break;
             }
 
             yield return null;
         }
 
-        SetAttackVisual(false);
-        currentState = State.Wander;
+        ExitAttack();
     }
 
-    IEnumerator SpawnRoutine()
+    Vector2 GetRandomCarryPosition()
     {
-        while (true)
-        {
-            float waitTime = Random.Range(minSpawnTime, maxSpawnTime);
-            yield return new WaitForSeconds(waitTime);
+        float maxDistance = 100f;
+        float padding = 1f;
 
-            if (spawnPrefab != null)
-            {
-                Instantiate(spawnPrefab, transform.position, Quaternion.identity);
-            }
+        RaycastHit2D hitRight = Physics2D.Raycast(transform.position, Vector2.right, maxDistance, wallLayer);
+        RaycastHit2D hitLeft = Physics2D.Raycast(transform.position, Vector2.left, maxDistance, wallLayer);
+        RaycastHit2D hitUp = Physics2D.Raycast(transform.position, Vector2.up, maxDistance, wallLayer);
+        RaycastHit2D hitDown = Physics2D.Raycast(transform.position, Vector2.down, maxDistance, wallLayer);
+
+        float minX = hitLeft ? hitLeft.point.x + padding : transform.position.x - 10f;
+        float maxX = hitRight ? hitRight.point.x - padding : transform.position.x + 10f;
+        float minY = hitDown ? hitDown.point.y + padding : transform.position.y - 10f;
+        float maxY = hitUp ? hitUp.point.y - padding : transform.position.y + 10f;
+
+        return new Vector2(
+            Random.Range(minX, maxX),
+            Random.Range(minY, maxY)
+        );
+    }
+
+    void TryDropPoop()
+    {
+        if (hasDroppedPoop || spawnPrefab == null)
+            return;
+
+        if (Random.value <= poopChance * Time.deltaTime)
+        {
+            Instantiate(spawnPrefab, transform.position, Quaternion.identity);
+            hasDroppedPoop = true;
         }
+    }
+
+    void ExitAttack()
+    {
+        rb.velocity = Vector2.zero;
+        target = null;
+        currentRoutine = null;
+        currentState = State.Wander;
+        SetAttackVisual(false);
+        PickNewWanderTarget();
+    }
+
+    void SetAttackVisual(bool attacking)
+    {
+        if (spriteRenderer == null) return;
+        spriteRenderer.sprite = attacking ? attackSprite : normalSprite;
     }
 
     public void TakeDamage(int dmg)
@@ -321,13 +359,7 @@ public class Enemy : MonoBehaviour
         health -= dmg;
 
         if (health <= 0)
-        {
-            StartCoroutine(EnragedRun());
-        }
-        else
-        {
-            currentState = State.Chase;
-        }
+            StartBehavior(EnragedRun());
     }
 
     IEnumerator EnragedRun()
@@ -353,18 +385,14 @@ public class Enemy : MonoBehaviour
 
         Vector2 force = Vector2.zero;
 
-        foreach (var hit in hits)
+        foreach (Collider2D hit in hits)
         {
             if (hit.gameObject == gameObject) continue;
 
             Vector2 diff = (Vector2)transform.position - (Vector2)hit.transform.position;
             float dist = Mathf.Max(diff.magnitude, 0.1f);
 
-            float strength = 1f;
-
-            if (hit.CompareTag("Statue"))
-                strength = 3f;
-
+            float strength = hit.CompareTag("Statue") ? 3f : 1f;
             force += diff.normalized * (strength / dist);
         }
 

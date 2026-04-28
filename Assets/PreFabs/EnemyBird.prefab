@@ -30,7 +30,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -1.83098, y: 0.33503, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 5, y: 5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -55,7 +55,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -76,7 +76,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 75f5f34dc1b5347e0b8351032682f224, type: 3}
+  m_Sprite: {fileID: 21300000, guid: fab25c6d427314f109afc2ecc73b2515, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -122,8 +122,8 @@ PolygonCollider2D:
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.28866667}
-    oldSize: {x: 1, y: 1}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 0.32, y: 0.32}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -131,9 +131,14 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: 0, y: 0.5773587}
-      - {x: -0.5, y: -0.28866667}
-      - {x: 0.5, y: -0.28866667}
+    - - {x: 0.17039844, y: -0.03083554}
+      - {x: 0.13406742, y: 0.046054363}
+      - {x: 0.041701093, y: 0.13867176}
+      - {x: -0.050148785, y: 0.13782601}
+      - {x: -0.16230026, y: 0.031790502}
+      - {x: -0.1680853, y: -0.081011854}
+      - {x: -0.102763146, y: -0.17446107}
+      - {x: 0.1573833, y: -0.16453011}
   m_UseDelaunayMesh: 1
 --- !u!114 &7896124313978757536
 MonoBehaviour:
@@ -157,8 +162,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   spriteRenderer: {fileID: 5110301055190371548}
-  normalSprite: {fileID: 21300000, guid: 70bd62740075ec341b7bfcb4505087be, type: 3}
-  attackSprite: {fileID: 1528042753643376236, guid: e05470de2343e43428aecc1c62689aa7, type: 3}
+  normalSprite: {fileID: 21300000, guid: fab25c6d427314f109afc2ecc73b2515, type: 3}
+  attackSprite: {fileID: 21300000, guid: 3af3c54eafea44fe5b1ad90f8dc43c9d, type: 3}
   spawnPrefab: {fileID: 6274833016177128665, guid: 1ec1698bc3b5347a3a96de935be8df25, type: 3}
   minSpawnTime: 5
   maxSpawnTime: 12

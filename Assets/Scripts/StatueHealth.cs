@@ -19,8 +19,6 @@ public class StatueHealth : MonoBehaviour
     {
         currentHealth -= amount;
 
-        Debug.Log("Statue took damage: " + amount + " | Current HP: " + currentHealth);
-
         if (currentHealth < 0)
             currentHealth = 0;
 
