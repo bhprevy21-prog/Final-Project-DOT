@@ -4,11 +4,12 @@ using System.Collections;
 public class Enemy : MonoBehaviour
 {
     public enum State
-    {
-        Wander,
-        Attack,
-        Enraged
-    }
+{
+    Wander,
+    Chase,
+    Attack,
+    Enraged
+}
 
     [Header("Stats")]
     public float speed = 2f;
@@ -16,6 +17,7 @@ public class Enemy : MonoBehaviour
     public float health = 5f;
     public float detectionRadius = 10f;
     public float stopDistance = 1.8f;
+    public int coinReward = 2;
 
     [Header("Raycast Settings")]
     [SerializeField] LayerMask wallLayer;
@@ -353,14 +355,20 @@ public class Enemy : MonoBehaviour
     }
 
     public void TakeDamage(int dmg)
+{
+    if (isInvincible) return;
+
+    health -= dmg;
+
+    if (health <= 0)
     {
-        if (isInvincible) return;
-
-        health -= dmg;
-
-        if (health <= 0)
-            StartBehavior(EnragedRun());
+        StartCoroutine(EnragedRun());
     }
+    else
+    {
+        currentState = State.Chase;
+    }
+}
 
     IEnumerator EnragedRun()
     {
