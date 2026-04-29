@@ -7,11 +7,6 @@ public class Bullet : MonoBehaviour
 
     private Rigidbody2D rb;
 
-    public void SetDirection(Vector2 dir)
-    {
-        rb.velocity = dir.normalized * speed;
-    }
-
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -22,34 +17,28 @@ public class Bullet : MonoBehaviour
         Destroy(gameObject, lifeTime);
     }
 
-    void OnTriggerEnter2D(Collider2D collision)
+    public void SetDirection(Vector2 dir)
     {
-        if (collision.CompareTag("Player"))
-            return;
-
-        if (collision.CompareTag("Enemy"))
-        {
-            Enemy enemy = collision.GetComponent<Enemy>();
-
-            if (enemy != null)
-                enemy.TakeDamage(1);
-
-            Destroy(gameObject);
-            return;
-        }
-
-        NPC npc = collision.GetComponent<NPC>();
-        if (npc != null)
-        {
-            npc.HitBullet();
-            Destroy(gameObject);
-            return;
-        }
-
-        if (collision.CompareTag("Statue"))
-        {
-            Destroy(gameObject);
-            return;
-        }
+        rb.velocity = dir.normalized * speed;
     }
+
+   void OnTriggerEnter2D(Collider2D collision)
+{
+    Debug.Log("Bullet hit: " + collision.name);
+
+    if (collision.CompareTag("Enemy"))
+    {
+        Debug.Log("Enemy detected!");
+
+        Enemy enemy = collision.GetComponent<Enemy>();
+
+        if (enemy != null)
+        {
+            Debug.Log("Calling enemy hit");
+            enemy.OnHitByBullet();
+        }
+
+        Destroy(gameObject);
+    }
+}
 }
