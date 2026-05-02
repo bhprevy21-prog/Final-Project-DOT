@@ -9,7 +9,22 @@ public class GameManager : MonoBehaviour
 
     [Header("Game Over UI")]
     public GameObject gameOverPanel;
+    [Header("Pause UI")]
+public GameObject pausePanel;
+public CanvasGroup pauseCanvasGroup;
 
+private bool isPaused = false;
+[Header("Pause Tips")]
+public TMPro.TextMeshProUGUI tipText;
+
+[System.Serializable]
+public class PauseTip
+{
+    [TextArea(2,4)]
+    public string text;
+}
+
+public PauseTip[] pauseTips;
     [Header("Other UI")]
 public GameObject itemShopPanel;
 public GameObject startButton;
@@ -33,8 +48,12 @@ public CanvasGroup gameOverCanvasGroup;
 
     void Start()
     {
-        gameOverPanel.SetActive(false);
-        Time.timeScale = 1f; // Make sure game starts unpaused
+       gameOverPanel.SetActive(false);
+
+if (pausePanel != null)
+    pausePanel.SetActive(false);
+
+Time.timeScale = 1f;
     }
 
    public void StatueGameOver()
@@ -59,7 +78,44 @@ public CanvasGroup gameOverCanvasGroup;
 
     Time.timeScale = 0f;
 }
+public void PauseGame()
+{
+    if (isPaused) return;
 
+    isPaused = true;
+    InputLocked = true;
+
+    if (itemShopPanel != null)
+        itemShopPanel.SetActive(false);
+
+   ShowRandomPauseTip();
+pausePanel.SetActive(true);
+
+    StartCoroutine(PauseAnimation());
+
+    Time.timeScale = 0f;
+}
+public void ResumeGame()
+{
+    if (!isPaused) return;
+
+    isPaused = false;
+    InputLocked = false;
+
+    pausePanel.SetActive(false);
+
+    Time.timeScale = 1f;
+}
+void ShowRandomPauseTip()
+{
+    if (pauseTips == null || pauseTips.Length == 0)
+        return;
+
+    int index = Random.Range(0, pauseTips.Length);
+
+    if (tipText != null)
+        tipText.text = pauseTips[index].text;
+}
     // Restart button
     public void RestartGame()
     {
@@ -71,7 +127,7 @@ public CanvasGroup gameOverCanvasGroup;
     public void LoadMainMenu()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene("SampleScene"); // Make sure scene name matches exactly
+        SceneManager.LoadScene("MainMenu"); // Make sure scene name matches exactly
     }
     IEnumerator GameOverAnimation()
 {
@@ -101,5 +157,46 @@ public CanvasGroup gameOverCanvasGroup;
     }
 
     gameOverCanvasGroup.alpha = 1;
+}
+void Update()
+{
+    if (isGameOver)
+        return;
+
+    if (Input.GetKeyDown(KeyCode.Escape))
+    {
+        if (isPaused)
+            ResumeGame();
+        else
+            PauseGame();
+    }
+}
+IEnumerator PauseAnimation()
+{
+    float duration = 0.35f;
+    float time = 0;
+
+    pauseCanvasGroup.alpha = 0;
+    pausePanel.transform.localScale = Vector3.one * 1.15f;
+
+    while (time < duration)
+    {
+        time += Time.unscaledDeltaTime;
+
+        float t = time / duration;
+
+        pauseCanvasGroup.alpha = t;
+
+        pausePanel.transform.localScale =
+            Vector3.Lerp(
+                Vector3.one * 1.15f,
+                Vector3.one,
+                t
+            );
+
+        yield return null;
+    }
+
+    pauseCanvasGroup.alpha = 1;
 }
 }

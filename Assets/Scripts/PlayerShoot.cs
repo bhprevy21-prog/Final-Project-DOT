@@ -10,6 +10,7 @@ public class PlayerShoot : MonoBehaviour
 
     [Header("Bullet Spawn")]
     public float spawnOffset = 1f;
+    
 
     void Update()
     {

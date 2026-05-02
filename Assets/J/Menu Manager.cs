@@ -1,18 +1,18 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+
 public class MenuManager : MonoBehaviour
 {
-    public string startScene;
+    public string startScene = "WaveScene";
 
     public void LoadLevel()
     {
-               SceneManager.LoadScene(startScene);
+        LoadingManager.sceneToLoad = startScene;
+        SceneManager.LoadScene("LoadingScene");
     }
 
     public void QuitGame()
     {
         Application.Quit();
     }
-
-
 }
