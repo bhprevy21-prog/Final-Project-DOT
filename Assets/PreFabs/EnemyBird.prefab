@@ -286,9 +286,9 @@ MonoBehaviour:
   detectRadius: 2
   chargeTime: 2
   diveSpeed: 12
-  cooldownTime: 30
   grabRadius: 0.7
   successChance: 0.9
+  failSafetyTime: 0.5
   normalSprite: {fileID: 21300000, guid: fab25c6d427314f109afc2ecc73b2515, type: 3}
   chargeSprite: {fileID: 21300000, guid: 1b8765e23a44d4b348108fce3ea2e1bb, type: 3}
   diveSprite: {fileID: 21300000, guid: 26815fcc5b1bb4cf098c15a477ad6e67, type: 3}

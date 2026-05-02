@@ -172,7 +172,9 @@ public class EnemyHunterAttack : MonoBehaviour
         Vector2 randomOffset = Random.insideUnitCircle * 15f;
         Vector3 guess = transform.position + (Vector3)randomOffset;
 
-        var node = AstarPath.active.GetNearest(guess).node;
+        var nnInfo = AstarPath.active.GetNearest(guess, NNConstraint.Default);
+        var node = nnInfo.node;
+        Debug.Log("Node" + node.position);   
         Vector3 carryTarget = node != null ? (Vector3)node.position : transform.position;
 
         float timer = 0f;

@@ -1791,11 +1791,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 142679487}
-  activationTime: 30
-  detectionRadius: 15
+  activationTime: 10
+  detectionRadius: 20
   arrow: {fileID: 6990662293378461334}
-  circleRadius: 4
-  arrowSmoothSpeed: 8
+  circleRadius: 1.5
+  arrowSmoothSpeed: 7
 --- !u!114 &142679490
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6950,20 +6950,20 @@ MonoBehaviour:
   items:
   - itemName: Turret
     prefab: {fileID: 8759102895312875136, guid: 018385741fb7645828c8b77436e5976b, type: 3}
-    icon: {fileID: 21300000, guid: 93e65e2f81b0d4916b49a9e50d3e91a8, type: 3}
-  - itemName: Scarecrow Siren
+    icon: {fileID: 21300000, guid: 237ee247414fecb4aa00d30146ba307d, type: 3}
+  - itemName: ScarecrowSiren
     prefab: {fileID: 5197180432747620880, guid: 9e1ee1be79e6440ffb6a6d2a1e09204b, type: 3}
     icon: {fileID: 21300000, guid: 94fb08db202dd4c1f85c312dd7682ec6, type: 3}
-  - itemName: Bird Trap
+  - itemName: BirdTrap
     prefab: {fileID: 4289019330199280467, guid: c826c891c0c9d4c029dc3df55a885f88, type: 3}
     icon: {fileID: 21300000, guid: 63e0d04b7210b40a3b4cf79f9e7ac5b4, type: 3}
   - itemName: Coyote
     prefab: {fileID: 6069069062826340696, guid: 1cb59c84382d94b18911bfe0e58458f0, type: 3}
     icon: {fileID: 21300000, guid: 51dbe7f29bd9a4640b56ba9b40128109, type: 3}
-  - itemName: Park Boots
+  - itemName: ParkBoots
     prefab: {fileID: 7506247877780027620, guid: b920915eb458e43c4b4e7b87de7a7f14, type: 3}
     icon: {fileID: 21300000, guid: c188e25aad6c34925a7fe7780767aa0f, type: 3}
-  - itemName: Robo Cleaner
+  - itemName: RoboCleaner
     prefab: {fileID: 1665339875322038391, guid: 1eca0636032394fdaac6fc2f7f934b61, type: 3}
     icon: {fileID: 21300000, guid: cb514e7d8a2f14d0da36bc69a9019bd6, type: 3}
   - itemName: Teacher
@@ -7186,7 +7186,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_TargetDisplay: 0
 --- !u!224 &882003632
 RectTransform:
@@ -9486,7 +9486,7 @@ PolygonCollider2D:
     m_Paths:
     - - {x: 37.12114, y: 32.17439}
       - {x: -30.75606, y: 32.70542}
-      - {x: -30.288876, y: -94.91445}
+      - {x: -29.389004, y: -92.66477}
   m_UseDelaunayMesh: 0
 --- !u!4 &1262128147
 Transform:
@@ -12245,7 +12245,7 @@ MonoBehaviour:
   waveIntroText: {fileID: 1473177562}
   waveIntroGroup: {fileID: 1473177561}
   nightOverlay: {fileID: 1993920547}
-  nightAlpha: 0.99
+  nightAlpha: 0.6
   vCam: {fileID: 1939522230}
   normalZoom: 5
   nightZoom: 3.5
@@ -12367,7 +12367,7 @@ MonoBehaviour:
   emptySprite: {fileID: 21300000, guid: ccb386cf64380442eb150fd737e99e43, type: 3}
   itemSprites:
   - itemName: Turret
-    sprite: {fileID: 21300000, guid: f3fac4ec382164bc28dbc5d818d66110, type: 3}
+    sprite: {fileID: 21300000, guid: 57a9127368ebc47458e5c9f79ba492df, type: 3}
   - itemName: ScarecrowSiren
     sprite: {fileID: 21300000, guid: c48414a8cf8d34df887f5f54312e922c, type: 3}
   - itemName: BirdTrap
@@ -13245,7 +13245,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Color: {r: 0.13652545, g: 0.16871093, b: 0.49056602, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
