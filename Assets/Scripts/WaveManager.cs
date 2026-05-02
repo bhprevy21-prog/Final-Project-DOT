@@ -28,28 +28,31 @@ public class WaveManager : MonoBehaviour
     public Transform npcSpawnPoint;
 
     [Header("Systems")]
-    public CoinUI coinUI;
     public StatueHealth statue;
+    public static WaveManager Instance;
 
     [Header("Stats")]
-    public int playerMoney = 0;
     public int currentWave = 1;
 
     [Header("Wave Intro UI")]
     public TextMeshProUGUI waveIntroText;
     public CanvasGroup waveIntroGroup;
 
-    public float introSpeed = 1200f;
-    public float fadeSpeed = 2.5f;
-
     [Header("Night Visuals")]
     public GameObject nightOverlay;
-    public float nightAlpha = 0.65f;
+    public float nightAlpha = 0.99f;
 
     [Header("Cinemachine")]
     public CinemachineVirtualCamera vCam;
     public float normalZoom = 5f;
     public float nightZoom = 3.5f;
+
+    [Header("UI")]
+    public StartButtonUI startButtonUI;
+
+    [Header("Coin UI (TEXT ONLY)")]
+    public TextMeshProUGUI CoinText;
+    public TextMeshProUGUI ShopCoins;
 
     private int previousEnemyCount = 10;
     private int enemiesThisWave = 10;
@@ -60,6 +63,11 @@ public class WaveManager : MonoBehaviour
     // START
     // =========================
 
+    void Awake()
+    {
+        Instance = this;
+    }
+
     void Start()
 {
     LoadGameState();
@@ -67,31 +75,19 @@ public class WaveManager : MonoBehaviour
     RestorePlayerPosition();
     UpdateWaveUI();
 
-    Debug.Log("Loaded Wave: " + currentWave);
-    Debug.Log("Loaded Mode: " + currentMode);
-
-    UpdateNightVisuals();
-    UpdateCameraZoom();
-
-    // Resume correct state
     if (currentMode == GameMode.Build)
     {
         waveActive = false;
-
-        if (startWaveButton != null)
-            startWaveButton.SetActive(true);
+        startButtonUI?.SetBuildMode();
     }
     else
     {
         StartWave();
     }
-}
 
-    IEnumerator DelayedIntro()
-    {
-        yield return null;
-        StartCoroutine(PlayWaveIntro());
-    }
+    UpdateNightVisuals();
+    UpdateCameraZoom();
+}
 
     // =========================
     // UPDATE
@@ -110,116 +106,37 @@ public class WaveManager : MonoBehaviour
     }
 
     // =========================
-    // DEBUG
-    // =========================
-
-    void LogWaveState(string context)
-    {
-        Debug.Log($"[WaveManager] {context} | Wave: {currentWave} | Mode: {currentMode}");
-    }
-
-    // =========================
-    // WAVE UI
-    // =========================
-
-    void UpdateWaveUI()
-    {
-        if (waveIntroText != null)
-            waveIntroText.text = "Wave " + currentWave;
-    }
-
-    // =========================
-    // INTRO ANIMATION
-    // =========================
-
-    IEnumerator PlayWaveIntro()
-{
-    if (waveIntroText == null || waveIntroGroup == null)
-        yield break;
-
-    UpdateWaveUI();
-
-    waveIntroText.color =
-        (currentMode == GameMode.NightWave)
-        ? new Color(0.7f, 0.2f, 1f)
-        : Color.red;
-
-    RectTransform rt = waveIntroText.rectTransform;
-
-    Vector2 startPos = new Vector2(900f, rt.anchoredPosition.y);
-    Vector2 centerPos = new Vector2(0f, rt.anchoredPosition.y);
-
-    rt.anchoredPosition = startPos;
-    waveIntroGroup.alpha = 1f;
-
-    float moveTime = 1.25f;
-    float holdTime = 1f;
-    float fadeTime = 1f;
-
-    // slide in
-    float t = 0f;
-    while (t < moveTime)
-    {
-        t += Time.deltaTime;
-        rt.anchoredPosition = Vector2.Lerp(startPos, centerPos, t / moveTime);
-        yield return null;
-    }
-
-    rt.anchoredPosition = centerPos;
-
-    // hold
-    yield return new WaitForSeconds(holdTime);
-
-    // fade out
-    t = 0f;
-    while (t < fadeTime)
-    {
-        t += Time.deltaTime;
-        waveIntroGroup.alpha = Mathf.Lerp(1f, 0f, t / fadeTime);
-        yield return null;
-    }
-
-    waveIntroGroup.alpha = 0f;
-}
+    // WAVE START
     // =========================
 
     void StartWave()
-    {
-        waveActive = true;
+{
+    waveActive = true;
 
-        if (startWaveButton != null)
-            startWaveButton.SetActive(false);
+    currentMode = (currentWave % 3 == 0)
+        ? GameMode.NightWave
+        : GameMode.Wave;
 
-        // 🌙 Night wave every 3rd wave
-        if (currentWave % 3 == 0)
-        {
-            currentMode = GameMode.NightWave;
-        }
-        else
-        {
-            currentMode = GameMode.Wave;
-        }
+    startButtonUI?.SetWaveMode();
+Debug.Log("Starting Wave " + currentWave + " | Mode = " + currentMode);
+    if (currentWave == 1)
+        enemiesThisWave = 10;
+    else
+        enemiesThisWave = Mathf.RoundToInt(previousEnemyCount * 1.5f);
 
-        LogWaveState("StartWave");
+    if (currentMode == GameMode.NightWave)
+        enemiesThisWave = Mathf.RoundToInt(enemiesThisWave * 1.3f);
 
-        if (currentWave == 1)
-            enemiesThisWave = 10;
-        else
-            enemiesThisWave = Mathf.RoundToInt(previousEnemyCount * 1.5f);
+    previousEnemyCount = enemiesThisWave;
 
-        if (currentMode == GameMode.NightWave)
-            enemiesThisWave = Mathf.RoundToInt(enemiesThisWave * 1.3f);
+    SpawnEnemies();
+    SpawnNPCs();
 
-        previousEnemyCount = enemiesThisWave;
+    UpdateNightVisuals();
+    UpdateCameraZoom();
 
-        SpawnEnemies();
-        SpawnNPCs();
-
-        UpdateNightVisuals();
-        UpdateCameraZoom();
-
-        StartCoroutine(PlayWaveIntro());
-    }
+    StartCoroutine(PlayWaveIntro());
+}
 
     // =========================
     // SPAWNING
@@ -236,12 +153,11 @@ public class WaveManager : MonoBehaviour
 
     void SpawnNPCs()
     {
-        int npcCount = GetNPCCountForWave(currentWave);
+        int npcCount = Mathf.Clamp(currentWave, 1, 10);
 
         for (int i = 0; i < npcCount; i++)
         {
             Vector2 offset = Random.insideUnitCircle;
-
             Instantiate(npcPrefab, (Vector2)npcSpawnPoint.position + offset, Quaternion.identity);
         }
     }
@@ -260,77 +176,87 @@ public class WaveManager : MonoBehaviour
         }
     }
 
-    void EnterBuildMode()
+   void EnterBuildMode()
+{
+    currentMode = GameMode.Build;
+
+    if (statue != null)
+        statue.Heal(50);
+
+    AddMoney(enemiesThisWave * 5);
+
+    startButtonUI?.SetBuildMode();
+
+    UpdateNightVisuals();
+    UpdateCameraZoom();
+
+    SaveGameState(); // ONLY HERE
+}
+
+   public void StartNextWave()
+{
+    if (currentMode != GameMode.Build)
+        return;
+
+    currentWave++;
+    StartWave();
+}
+
+    // =========================
+    // MONEY SYSTEM (FIXED CLEAN)
+    // =========================
+
+    public int playerMoney = 0;
+
+    public void AddMoney(int amount)
+{
+    playerMoney += amount;
+    UpdateCoinsUI();
+}
+
+    void UpdateCoinsUI()
     {
-        currentMode = GameMode.Build;
+        if (CoinText != null)
+            CoinText.text = playerMoney.ToString();
 
-        if (statue != null)
-            statue.Heal(50);
-
-        AddMoney(enemiesThisWave * 5);
-
-        if (startWaveButton != null)
-            startWaveButton.SetActive(true);
-
-        UpdateNightVisuals();
-        UpdateCameraZoom();
-
-        LogWaveState("EnterBuildMode");
-    }
-
-    public void StartNextWave()
-    {
-        if (currentMode != GameMode.Build)
-            return;
-
-        currentWave++;
-        StartWave();
+        if (ShopCoins != null)
+            ShopCoins.text = playerMoney.ToString();
     }
 
     // =========================
     // VISUALS
     // =========================
 
-    void UpdateNightVisuals()
+   void UpdateNightVisuals()
+{
+    if (nightOverlay == null)
     {
-        if (nightOverlay == null)
-            return;
-
-        CanvasGroup cg = nightOverlay.GetComponent<CanvasGroup>();
-
-        if (cg == null)
-            cg = nightOverlay.AddComponent<CanvasGroup>();
-
-        cg.alpha = (currentMode == GameMode.NightWave) ? nightAlpha : 0f;
+        Debug.Log("NO NIGHT OVERLAY ASSIGNED");
+        return;
     }
+
+    nightOverlay.SetActive(true);
+
+    CanvasGroup cg = nightOverlay.GetComponent<CanvasGroup>();
+    if (cg == null)
+        cg = nightOverlay.AddComponent<CanvasGroup>();
+
+    bool isNight = currentMode == GameMode.NightWave;
+
+    cg.alpha = isNight ? nightAlpha : 0f;
+    cg.blocksRaycasts = false;
+    cg.interactable = false;
+
+    Debug.Log("Overlay active | isNight = " + isNight + " | alpha = " + cg.alpha);
+}
 
     void UpdateCameraZoom()
     {
-        if (vCam == null)
-            return;
+        if (vCam == null) return;
 
         var lens = vCam.m_Lens;
-
-        lens.OrthographicSize =
-            (currentMode == GameMode.NightWave) ? nightZoom : normalZoom;
-
+        lens.OrthographicSize = (currentMode == GameMode.NightWave) ? nightZoom : normalZoom;
         vCam.m_Lens = lens;
-    }
-
-    // =========================
-    // MONEY
-    // =========================
-
-    public void AddMoney(int amount)
-    {
-        playerMoney += amount;
-        UpdateCoinsUI();
-    }
-
-    void UpdateCoinsUI()
-    {
-        if (coinUI != null)
-            coinUI.SetCoins(playerMoney);
     }
 
     // =========================
@@ -338,41 +264,66 @@ public class WaveManager : MonoBehaviour
     // =========================
 
     public void SaveGameState()
-    {
-        PlayerPrefs.SetInt("SavedWave", currentWave);
-        PlayerPrefs.SetInt("SavedMode", (int)currentMode);
-        PlayerPrefs.SetInt("SavedMoney", playerMoney);
-
-        PlayerPrefs.Save();
-    }
-
-    public void LoadGameState()
 {
-    currentWave = PlayerPrefs.GetInt("SavedWave", 1);
-    currentMode = (GameMode)PlayerPrefs.GetInt("SavedMode", (int)GameMode.Wave);
-    playerMoney = PlayerPrefs.GetInt("SavedMoney", 0);
+    PlayerPrefs.SetInt("SavedWave", currentWave);
+    PlayerPrefs.SetInt("SavedMode", (int)GameMode.Build);
+    PlayerPrefs.SetInt("SavedMoney", playerMoney);
+    PlayerPrefs.Save();
 }
 
-    void RestorePlayerPosition()
+    public void LoadGameState()
     {
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-
-        if (player == null)
-            return;
-
-        float x = PlayerPrefs.GetFloat("PlayerX", player.transform.position.x);
-        float y = PlayerPrefs.GetFloat("PlayerY", player.transform.position.y);
-
-        player.transform.position = new Vector3(x, y, player.transform.position.z);
+        currentWave = PlayerPrefs.GetInt("SavedWave", 1);
+        currentMode = (GameMode)PlayerPrefs.GetInt("SavedMode", 0);
+        playerMoney = PlayerPrefs.GetInt("SavedMoney", 0);
     }
 
     // =========================
-    // NPC COUNT
+    // UI HELP
     // =========================
 
-    int GetNPCCountForWave(int wave)
+    void UpdateWaveUI()
     {
-        return Mathf.Clamp(wave, 1, 10);
+        if (waveIntroText != null)
+            waveIntroText.text = "Wave " + currentWave;
+    }
+
+    IEnumerator PlayWaveIntro()
+    {
+        if (waveIntroText == null || waveIntroGroup == null)
+            yield break;
+
+        UpdateWaveUI();
+
+        RectTransform rt = waveIntroText.rectTransform;
+
+        Vector2 start = new Vector2(900f, rt.anchoredPosition.y);
+        Vector2 center = new Vector2(0f, rt.anchoredPosition.y);
+
+        rt.anchoredPosition = start;
+        waveIntroGroup.alpha = 1f;
+
+        float t = 0f;
+
+        while (t < 1.25f)
+        {
+            t += Time.deltaTime;
+            rt.anchoredPosition = Vector2.Lerp(start, center, t / 1.25f);
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(1f);
+
+        t = 0f;
+
+        while (t < 1f)
+        {
+            t += Time.deltaTime;
+            waveIntroGroup.alpha = Mathf.Lerp(1f, 0f, t);
+            yield return null;
+        }
+
+        waveIntroGroup.alpha = 0f;
     }
 
     // =========================
@@ -384,8 +335,28 @@ public class WaveManager : MonoBehaviour
     PlayerPrefs.DeleteAll();
     PlayerPrefs.Save();
 
+    // clear inventory too
+    if (PlayerInventory.Instance != null)
+    {
+        PlayerInventory.Instance.hotbar = new string[4];
+        PlayerInventory.Instance.backpack.Clear();
+        PlayerInventory.Instance.selectedSlot = -1;
+        PlayerInventory.Instance.selectedItem = "";
+    }
+
     Debug.Log("SAVE CLEARED");
 
     SceneManager.LoadScene("WaveScene");
 }
+
+    void RestorePlayerPosition()
+    {
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (!player) return;
+
+        float x = PlayerPrefs.GetFloat("PlayerX", player.transform.position.x);
+        float y = PlayerPrefs.GetFloat("PlayerY", player.transform.position.y);
+
+        player.transform.position = new Vector3(x, y, player.transform.position.z);
+    }
 }

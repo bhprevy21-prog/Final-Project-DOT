@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: -8425289321976395077}
   - component: {fileID: 6399003945470865111}
   - component: {fileID: 4694312784451479591}
+  - component: {fileID: -666900698368798743}
   m_Layer: 0
   m_Name: EnemyBird
   m_TagString: Enemy
@@ -252,6 +253,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2ab76dda60c84366a464b3cd2f943b9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  repathTime: 3
+  wanderRadius: 20
 --- !u!114 &4694312784451479591
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -267,3 +270,25 @@ MonoBehaviour:
   launchSpeed: 8
   separationRadius: 1.5
   separationStrength: 3
+  canBeHit: 1
+--- !u!114 &-666900698368798743
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1412082631589677808}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40159880a68af47e08bfa3ba8564e3ef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  detectRadius: 2
+  chargeTime: 2
+  diveSpeed: 12
+  cooldownTime: 30
+  grabRadius: 0.7
+  successChance: 0.9
+  normalSprite: {fileID: 21300000, guid: fab25c6d427314f109afc2ecc73b2515, type: 3}
+  chargeSprite: {fileID: 21300000, guid: 1b8765e23a44d4b348108fce3ea2e1bb, type: 3}
+  diveSprite: {fileID: 21300000, guid: 26815fcc5b1bb4cf098c15a477ad6e67, type: 3}

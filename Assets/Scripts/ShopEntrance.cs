@@ -1,47 +1,43 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class ShopEntrance : MonoBehaviour
 {
+    public GameObject shopPanel;
+
     private bool playerNearby = false;
 
     void Update()
     {
         WaveManager wm = FindFirstObjectByType<WaveManager>();
 
-        // 🔒 BLOCK ENTRY DURING WAVE MODE
+        // block shop during waves
         if (wm != null && wm.currentMode == WaveManager.GameMode.Wave)
             return;
 
         if (playerNearby && Input.GetKeyDown(KeyCode.E))
         {
-            if (wm != null)
-                wm.SaveGameState();
-
-            SceneManager.LoadScene("ItemShopScene");
+            shopPanel.SetActive(true);
+            Debug.Log("Opened Shop");
         }
     }
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
-        {
-            WaveManager wm = FindFirstObjectByType<WaveManager>();
+        if (!other.CompareTag("Player"))
+            return;
 
-            // 🔒 Prevent interaction in wave mode
-            if (wm != null && wm.currentMode == WaveManager.GameMode.Wave)
-                return;
+        WaveManager wm = FindFirstObjectByType<WaveManager>();
 
-            playerNearby = true;
-            Debug.Log("Press E to enter shop");
-        }
+        if (wm != null && wm.currentMode == WaveManager.GameMode.Wave)
+            return;
+
+        playerNearby = true;
+        Debug.Log("Press E to enter shop");
     }
 
     void OnTriggerExit2D(Collider2D other)
     {
         if (other.CompareTag("Player"))
-        {
             playerNearby = false;
-        }
     }
 }

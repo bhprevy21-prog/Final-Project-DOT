@@ -5,51 +5,56 @@ public class Enemy : MonoBehaviour
 {
     [Header("Movement")]
     public float launchSpeed = 8f;
-[Header("Avoidance")]
-public float separationRadius = 1.5f;
-public float separationStrength = 3f;
+
+    [Header("Avoidance")]
+    public float separationRadius = 1.5f;
+    public float separationStrength = 3f;
+
     private Rigidbody2D rb;
     private Vector2 moveDir;
 
     private bool isLaunched = false;
+    public bool canBeHit = true;
 
-private AIPath aiPath;
+    private AIPath aiPath;
+
     void Awake()
-{
-    rb = GetComponent<Rigidbody2D>();
-    aiPath = GetComponent<AIPath>();
-}
+    {
+        rb = GetComponent<Rigidbody2D>();
+        aiPath = GetComponent<AIPath>();
+    }
 
     void Update()
     {
-        if (isLaunched)
-{
-    Vector2 separation = GetSeparationForce();
+        // Only move when launched
+        if (!isLaunched) return;
 
-    Vector2 finalDir =
-        (moveDir + separation).normalized;
+        Vector2 separation = GetSeparationForce();
 
-    rb.velocity = finalDir * launchSpeed;
-    return;
-}
+        Vector2 finalDir = (moveDir + separation).normalized;
+
+        rb.velocity = finalDir * launchSpeed;
     }
 
-    void FixedUpdate()
+    // =========================
+    // BULLET HIT
+    // =========================
+    public void OnHitByBullet()
     {
-        if (!isLaunched)
-        {
-            rb.velocity = Vector2.zero;
-        }
+        if (!canBeHit) return;
+
+        canBeHit = false;
+
+        // stop AI pathing so it doesn't fight physics
+        if (aiPath != null)
+            aiPath.enabled = false;
+
+        LaunchToBorder();
     }
 
-   public void OnHitByBullet()
-{
-    if (aiPath != null)
-        aiPath.enabled = false;
-
-    LaunchToBorder();
-}
-
+    // =========================
+    // LAUNCH SYSTEM
+    // =========================
     void LaunchToBorder()
     {
         GameObject[] borders = GameObject.FindGameObjectsWithTag("Border");
@@ -58,14 +63,18 @@ private AIPath aiPath;
 
         GameObject chosen = borders[Random.Range(0, borders.Length)];
 
-        Vector2 dir = (chosen.transform.position - transform.position).normalized;
+        moveDir = (chosen.transform.position - transform.position).normalized;
 
-        moveDir = dir;
         isLaunched = true;
     }
 
+    // =========================
+    // BORDER BEHAVIOR (ONLY WHEN LAUNCHED)
+    // =========================
     void OnTriggerEnter2D(Collider2D other)
     {
+        if (!isLaunched) return; // 🔥 CRITICAL FIX
+
         if (!other.CompareTag("Border")) return;
 
         if (!IsInCameraView())
@@ -74,10 +83,14 @@ private AIPath aiPath;
         }
         else
         {
+            // bounce/re-roll direction instead of spamming launch
             LaunchToBorder();
         }
     }
 
+    // =========================
+    // CAMERA CHECK
+    // =========================
     bool IsInCameraView()
     {
         Vector3 viewPos = Camera.main.WorldToViewportPoint(transform.position);
@@ -85,43 +98,57 @@ private AIPath aiPath;
         return viewPos.x > 0 && viewPos.x < 1 &&
                viewPos.y > 0 && viewPos.y < 1;
     }
+
+    // =========================
+    // SEPARATION (ENEMY AVOIDANCE)
+    // =========================
     Vector2 GetSeparationForce()
-{
-    Collider2D[] hits = Physics2D.OverlapCircleAll(
-        transform.position,
-        separationRadius
-    );
-
-    Vector2 force = Vector2.zero;
-
-    foreach (Collider2D hit in hits)
     {
-        if (hit.gameObject == gameObject)
-            continue;
+        Collider2D[] hits = Physics2D.OverlapCircleAll(
+            transform.position,
+            separationRadius
+        );
 
-        if (!hit.CompareTag("Enemy"))
-            continue;
+        Vector2 force = Vector2.zero;
 
-        Vector2 diff =
-            (Vector2)transform.position -
-            (Vector2)hit.transform.position;
+        foreach (Collider2D hit in hits)
+        {
+            if (hit.gameObject == gameObject)
+                continue;
 
-        float dist = diff.magnitude;
+            if (!hit.CompareTag("Enemy"))
+                continue;
 
-        if (dist <= 0.01f)
-            continue;
+            Vector2 diff = (Vector2)transform.position - (Vector2)hit.transform.position;
 
-        force += diff.normalized / dist;
+            float dist = diff.magnitude;
+
+            if (dist <= 0.01f)
+                continue;
+
+            force += diff.normalized / dist;
+        }
+
+        return force.normalized * separationStrength;
     }
 
-    return force.normalized * separationStrength;
-}
-void OnDrawGizmosSelected()
-{
-    Gizmos.color = Color.red;
-    Gizmos.DrawWireSphere(
-        transform.position,
-        separationRadius
-    );
-}
+    // =========================
+    // DEBUG
+    // =========================
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, separationRadius);
+    }
+
+    void OnDisable()
+    {
+        Debug.Log(gameObject.name + " was DISABLED");
+    }
+
+    void OnDestroy()
+    {
+        Debug.Log(gameObject.name + " was DESTROYED");
+        FindObjectOfType<EnemyDirectorUI>()?.ResetTimer();
+    }
 }

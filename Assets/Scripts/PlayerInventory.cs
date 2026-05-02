@@ -5,26 +5,157 @@ public class PlayerInventory : MonoBehaviour
 {
     public static PlayerInventory Instance;
 
-    private Dictionary<string, int> items = new Dictionary<string, int>();
+    [Header("Hotbar")]
+    public string[] hotbar = new string[4];
+
+    [Header("Backpack")]
+    public List<string> backpack = new List<string>();
+    public int backpackLimit = 14;
+
+    [Header("Selection")]
+   public int selectedSlot = -1;
+public string selectedItem = "";
 
     void Awake()
+{
+    Instance = this;
+
+    hotbar = new string[4];
+    backpack = new List<string>();
+}
+
+    void Start()
     {
-        Instance = this;
+        UpdateSelectedItem();
     }
+    void Update()
+{
+    if (Input.GetKeyDown(KeyCode.Alpha1))
+        SelectHotbarSlot(0);
+
+    if (Input.GetKeyDown(KeyCode.Alpha2))
+        SelectHotbarSlot(1);
+
+    if (Input.GetKeyDown(KeyCode.Alpha3))
+        SelectHotbarSlot(2);
+
+    if (Input.GetKeyDown(KeyCode.Alpha4))
+        SelectHotbarSlot(3);
+
+    // remove selected item
+    if (Input.GetKeyDown(KeyCode.R))
+        RemoveSelectedHotbarItem();
+}
 
     public void AddItem(string itemName)
     {
-        if (!items.ContainsKey(itemName))
-            items[itemName] = 0;
+        // fill hotbar first
+        for (int i = 0; i < hotbar.Length; i++)
+        {
+            if (string.IsNullOrEmpty(hotbar[i]))
+            {
+                hotbar[i] = itemName;
 
-        items[itemName]++;
+                if (selectedItem == "")
+                {
+                    selectedSlot = i;
+                    UpdateSelectedItem();
+                }
+
+                return;
+            }
+        }
+
+        // backpack overflow
+        if (backpack.Count >= backpackLimit)
+        {
+            Debug.Log("Inventory Full");
+            return;
+        }
+
+        backpack.Add(itemName);
     }
 
-    public int GetItemCount(string itemName)
+    public string GetHotbarItem(int slot)
     {
-        if (!items.ContainsKey(itemName))
-            return 0;
+        if (slot < 0 || slot >= hotbar.Length)
+            return "";
 
-        return items[itemName];
+        return hotbar[slot];
     }
+
+    public void SelectHotbarSlot(int index)
+{
+    if (index < 0 || index >= hotbar.Length)
+        return;
+
+    if (string.IsNullOrEmpty(hotbar[index]))
+        return;
+
+    selectedSlot = index;
+    UpdateSelectedItem();
+
+    Debug.Log("Selected: " + selectedItem);
+}
+
+    void UpdateSelectedItem()
+{
+    if (selectedSlot < 0 || selectedSlot >= hotbar.Length)
+    {
+        selectedItem = "";
+        return;
+    }
+
+    selectedItem = hotbar[selectedSlot];
+}
+
+    public void SwapBackpackWithSelected(int backpackIndex)
+    {
+        if (backpackIndex < 0 || backpackIndex >= backpack.Count)
+            return;
+
+        string temp = hotbar[selectedSlot];
+        hotbar[selectedSlot] = backpack[backpackIndex];
+        backpack[backpackIndex] = temp;
+
+        UpdateSelectedItem();
+    }
+
+    public void RemoveBackpackItem(int backpackIndex)
+    {
+        if (backpackIndex < 0 || backpackIndex >= backpack.Count)
+            return;
+
+        backpack.RemoveAt(backpackIndex);
+    }
+    public void RemoveSelectedHotbarItem()
+{
+    if (selectedSlot < 0)
+        return;
+
+    if (selectedSlot >= hotbar.Length)
+        return;
+
+    hotbar[selectedSlot] = "";
+
+    selectedItem = "";
+    selectedSlot = -1;
+
+    Debug.Log("Removed item from hotbar");
+}
+public bool IsInventoryEmpty()
+{
+    // check hotbar
+    for (int i = 0; i < hotbar.Length; i++)
+    {
+        if (!string.IsNullOrEmpty(hotbar[i]))
+            return false;
+    }
+
+    // check backpack
+    if (backpack.Count > 0)
+        return false;
+
+    return true;
+}
 }
