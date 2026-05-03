@@ -454,7 +454,7 @@ MonoBehaviour:
   m_Transition: 1
   m_Colors:
     m_NormalColor: {r: 1, g: 0, b: 0, a: 1}
-    m_HighlightedColor: {r: 1, g: 0.8632076, b: 0.8632076, a: 1}
+    m_HighlightedColor: {r: 0.21698111, g: 0, b: 0, a: 1}
     m_PressedColor: {r: 0.5834663, g: 1, b: 0, a: 1}
     m_SelectedColor: {r: 0.09451604, g: 1, b: 0, a: 1}
     m_DisabledColor: {r: 0.3773585, g: 0.3773585, b: 0.3773585, a: 0.5019608}
@@ -555,10 +555,10 @@ MonoBehaviour:
   spinner: {fileID: 1634527004}
   spinSpeed: 200
   tips:
-  - Red-eyed birds are your enemies!
+  - BloodWing birds are your enemies!
   - Keep some money in reserve.
   - Spread defenses instead of clustering them.
-  - "NPCs are valuable\u2014protect them."
+  - Your citizens are valuable! You must protect them.
   - Batteries improve machine efficiency.
   systemMessages:
   - Initializing bird systems...
