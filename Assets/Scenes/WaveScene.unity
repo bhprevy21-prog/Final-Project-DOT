@@ -2914,7 +2914,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: Button
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 0}
+  m_fontAsset: {fileID: 11400000, guid: fa8d98f9813509740aa6f2b1d7f150eb, type: 2}
   m_sharedMaterial: {fileID: 6857315088688401642, guid: fa8d98f9813509740aa6f2b1d7f150eb, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -3424,7 +3424,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &411317824
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5783,7 +5783,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: Button
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 0}
+  m_fontAsset: {fileID: 11400000, guid: fa8d98f9813509740aa6f2b1d7f150eb, type: 2}
   m_sharedMaterial: {fileID: 6857315088688401642, guid: fa8d98f9813509740aa6f2b1d7f150eb, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -7949,7 +7949,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: Game Over
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 0}
+  m_fontAsset: {fileID: 11400000, guid: 4cce073c68b5d42478a1454676d74c9d, type: 2}
   m_sharedMaterial: {fileID: 1714171525486789578, guid: 4cce073c68b5d42478a1454676d74c9d, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
