@@ -16,10 +16,11 @@ public class WaveManager : MonoBehaviour
     [Header("Mode")]
     public GameMode currentMode;
 
-    [Header("References")]
-    public GameObject startWaveButton;
-    public GameObject enemyPrefab;
-    public GameObject npcPrefab;
+   [Header("References")]
+public GameObject startWaveButton;
+public GameObject enemyPrefab;
+public GameObject npcPrefab;
+
 
     [Header("Spawn Points")]
     public Transform[] spawnPoints;
@@ -143,14 +144,19 @@ Debug.Log("Starting Wave " + currentWave + " | Mode = " + currentMode);
     // =========================
 
     void SpawnEnemies()
+{
+    for (int i = 0; i < enemiesThisWave; i++)
     {
-        for (int i = 0; i < enemiesThisWave; i++)
-        {
-            Transform spawn = spawnPoints[Random.Range(0, spawnPoints.Length)];
-            Instantiate(enemyPrefab, spawn.position, Quaternion.identity);
-        }
-    }
+        Transform spawn =
+            spawnPoints[Random.Range(0, spawnPoints.Length)];
 
+        Instantiate(
+            enemyPrefab,
+            spawn.position,
+            Quaternion.identity
+        );
+    }
+}
     void SpawnNPCs()
     {
         int npcCount = Mathf.Clamp(currentWave, 1, 10);

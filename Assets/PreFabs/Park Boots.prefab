@@ -11,9 +11,10 @@ GameObject:
   - component: {fileID: 8525136679660095435}
   - component: {fileID: 7544002245210138488}
   - component: {fileID: -3431652342945679226}
+  - component: {fileID: 7307600243982948915}
   m_Layer: 0
   m_Name: Park Boots
-  m_TagString: Untagged
+  m_TagString: Item
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -112,3 +113,16 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &7307600243982948915
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7506247877780027620}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 405148b2b884c4ffa9fc4753fbc6b0e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  durability: 1

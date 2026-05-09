@@ -10,14 +10,22 @@ public class BirdPoop : MonoBehaviour
     {
         // 🧍 PLAYER ENTERS POOP
         if (collision.CompareTag("Player"))
-        {
-            player = collision.GetComponent<PlayerMovement2D>();
+{
+    player = collision.GetComponent<PlayerMovement2D>();
 
-            if (player != null)
-            {
-                player.ApplySlow(slowMultiplier);
-            }
+    if (player != null)
+    {
+        // boots instantly break
+        if (player.hasParkBoots)
+        {
+            player.BreakParkBoots();
+            Debug.Log("Bird poop broke ParkBoots!");
+            return;
         }
+
+        player.ApplySlow(slowMultiplier);
+    }
+}
 
         // 🧍 NPC STEPS IN POOP
         NPC npc = collision.GetComponent<NPC>();

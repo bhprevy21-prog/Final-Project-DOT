@@ -582,7 +582,7 @@ MonoBehaviour:
   - Finalizing spawn points...
   - 'System ready: birds online.'
   minLoadTime: 6
-  maxLoadTime: 8
+  maxLoadTime: 7
 --- !u!4 &962204005
 Transform:
   m_ObjectHideFlags: 0

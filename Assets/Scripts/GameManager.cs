@@ -58,11 +58,21 @@ Time.timeScale = 1f;
 
    public void StatueGameOver()
 {
-    if (isGameOver) return;
+    if (isGameOver)
+        return;
 
     isGameOver = true;
 
     Debug.Log("Game Over Triggered");
+
+    // FORCE close pause if open
+    if (isPaused)
+    {
+        isPaused = false;
+
+        if (pausePanel != null)
+            pausePanel.SetActive(false);
+    }
 
     InputLocked = true;
 
@@ -80,7 +90,12 @@ Time.timeScale = 1f;
 }
 public void PauseGame()
 {
-    if (isPaused) return;
+    // Game Over always has priority
+    if (isGameOver)
+        return;
+
+    if (isPaused)
+        return;
 
     isPaused = true;
     InputLocked = true;
@@ -88,8 +103,9 @@ public void PauseGame()
     if (itemShopPanel != null)
         itemShopPanel.SetActive(false);
 
-   ShowRandomPauseTip();
-pausePanel.SetActive(true);
+    ShowRandomPauseTip();
+
+    pausePanel.SetActive(true);
 
     StartCoroutine(PauseAnimation());
 
@@ -160,6 +176,7 @@ void ShowRandomPauseTip()
 }
 void Update()
 {
+    // Game Over overrides everything
     if (isGameOver)
         return;
 

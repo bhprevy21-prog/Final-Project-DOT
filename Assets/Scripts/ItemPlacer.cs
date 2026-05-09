@@ -4,41 +4,47 @@ using UnityEngine.EventSystems;
 public class ItemPlacer : MonoBehaviour
 {
     public Camera cam;
-[Header("Placement")]
-public LayerMask blockedLayers;
+
+    [Header("Placement")]
+    public LayerMask blockedLayers;
+
     private bool isPlacing = false;
+    private bool canPlace = true;
+    public float placementSpacing = 1.5f;
+
     private string currentItem = "";
     private GameObject previewObject;
-private bool canPlace = true;
 
     void Update()
-{
-    if (isPlacing)
     {
-        FollowMouse();
-        CheckPlacementValidity();
-
-        // click to place
-        if (Input.GetMouseButtonDown(0))
+        if (isPlacing)
         {
-            ConfirmPlacement();
+            FollowMouse();
+            CheckPlacementValidity();
+
+            // confirm placement
+            if (Input.GetMouseButtonDown(0))
+            {
+                ConfirmPlacement();
+            }
+
+            // cancel placement
+            if (Input.GetMouseButtonDown(1) ||
+                Input.GetKeyDown(KeyCode.Escape))
+            {
+                CancelPlacement();
+            }
         }
-
-        // cancel
-        if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape))
+        else
         {
-            CancelPlacement();
+            // start placing
+            if (Input.GetMouseButtonDown(0))
+            {
+                StartPlacing();
+            }
         }
     }
-    else
-    {
-        // begin placement
-        if (Input.GetMouseButtonDown(0))
-        {
-            StartPlacing();
-        }
-    }
-}
+
     void StartPlacing()
     {
         if (PlayerInventory.Instance == null)
@@ -47,6 +53,7 @@ private bool canPlace = true;
         if (string.IsNullOrEmpty(PlayerInventory.Instance.selectedItem))
             return;
 
+        // don't place through UI
         if (EventSystem.current != null &&
             EventSystem.current.IsPointerOverGameObject())
             return;
@@ -63,6 +70,9 @@ private bool canPlace = true;
         }
 
         previewObject = Instantiate(prefab);
+
+        // disable gameplay logic while previewing
+        SetPreviewMode(previewObject, true);
 
         // ghost transparency
         SpriteRenderer[] renderers =
@@ -92,27 +102,32 @@ private bool canPlace = true;
     }
 
     void ConfirmPlacement()
-{
-    if (!canPlace)
     {
-        Debug.Log("Invalid placement");
-        return;
+        if (!canPlace)
+        {
+            Debug.Log("Invalid placement");
+            return;
+        }
+
+        // turn real object back on
+        SetPreviewMode(previewObject, false);
+
+        // restore normal sprite color
+        SpriteRenderer[] renderers =
+            previewObject.GetComponentsInChildren<SpriteRenderer>();
+
+        foreach (SpriteRenderer sr in renderers)
+        {
+            sr.color = Color.white;
+        }
+
+        // remove item from inventory
+        PlayerInventory.Instance.RemoveSelectedHotbarItem();
+
+        previewObject = null;
+        currentItem = "";
+        isPlacing = false;
     }
-
-    SpriteRenderer[] renderers =
-        previewObject.GetComponentsInChildren<SpriteRenderer>();
-
-    foreach (SpriteRenderer sr in renderers)
-    {
-        sr.color = Color.white;
-    }
-
-    PlayerInventory.Instance.RemoveSelectedHotbarItem();
-
-    previewObject = null;
-    currentItem = "";
-    isPlacing = false;
-}
 
     void CancelPlacement()
     {
@@ -123,48 +138,92 @@ private bool canPlace = true;
         currentItem = "";
         isPlacing = false;
     }
+
     void CheckPlacementValidity()
 {
     if (previewObject == null)
         return;
 
-    Collider2D col =
-        previewObject.GetComponent<Collider2D>();
+    canPlace = true;
 
-    if (col == null)
-    {
-        canPlace = true;
-        return;
-    }
+    Vector2 pos = previewObject.transform.position;
 
+    // blocked layers check
     Collider2D hit =
-        Physics2D.OverlapBox(
-            col.bounds.center,
-            col.bounds.size,
-            0f,
+        Physics2D.OverlapCircle(
+            pos,
+            placementSpacing,
             blockedLayers
         );
 
-    canPlace = (hit == null);
+    if (hit != null)
+        canPlace = false;
+
+    // too close to another placed object
+    Collider2D[] nearby =
+        Physics2D.OverlapCircleAll(
+            pos,
+            placementSpacing
+        );
+
+    foreach (Collider2D c in nearby)
+    {
+        if (c.gameObject == previewObject)
+            continue;
+
+        // only check placed objects
+        if (c.CompareTag("Item"))
+        {
+            canPlace = false;
+            break;
+        }
+        if (Physics2D.OverlapCircle(pos, 1f, LayerMask.GetMask("Player")))
+    canPlace = false;
+    }
 
     SetGhostColor();
 }
-void SetGhostColor()
+
+    void SetGhostColor()
+    {
+        if (previewObject == null)
+            return;
+
+        SpriteRenderer[] renderers =
+            previewObject.GetComponentsInChildren<SpriteRenderer>();
+
+        foreach (SpriteRenderer sr in renderers)
+        {
+            if (canPlace)
+                sr.color = new Color(0f, 1f, 0f, 0.5f);
+            else
+                sr.color = new Color(1f, 0f, 0f, 0.5f);
+        }
+    }
+
+    void SetPreviewMode(GameObject obj, bool previewMode)
 {
-    if (previewObject == null)
+    if (obj == null)
         return;
 
-    SpriteRenderer[] renderers =
-        previewObject.GetComponentsInChildren<SpriteRenderer>();
+    // disable all scripts
+    MonoBehaviour[] scripts =
+        obj.GetComponentsInChildren<MonoBehaviour>(true);
 
-    foreach (SpriteRenderer sr in renderers)
+    foreach (MonoBehaviour script in scripts)
     {
-        Color c = sr.color;
+        // don't disable this placer script if somehow referenced
+        if (script == this)
+            continue;
 
-        if (canPlace)
-            sr.color = new Color(0f, 1f, 0f, 0.5f); // green
-        else
-            sr.color = new Color(1f, 0f, 0f, 0.5f); // red
+        script.enabled = !previewMode;
     }
+
+    // disable colliders
+    Collider2D[] cols =
+        obj.GetComponentsInChildren<Collider2D>(true);
+
+    foreach (Collider2D col in cols)
+        col.enabled = !previewMode;
 }
 }

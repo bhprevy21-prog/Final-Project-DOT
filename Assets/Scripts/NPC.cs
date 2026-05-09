@@ -15,101 +15,91 @@ public class NPC : MonoBehaviour
 
     [Header("Happiness")]
     public int happiness = 100;
-    [Header("Panic State")]
-public float panicSpeed = 125f;
 
-private bool isPanicking = false;
-private Vector2 panicDirection;
-private bool touchingBorder = false;
-private float borderTimer = 0f;
-[Header("Visual")]
-public Sprite[] possibleSprites;
-    private Vector2 targetPoint;
-    private float aliveTime = 0f;
+    [Header("Panic")]
+    public float panicSpeed = 125f;
 
-    private bool leaving = false;
-    private bool hasReported = false;
+    [Header("Visual")]
+    public Sprite[] possibleSprites;
 
-    public bool statueTriggeredThisWave = false;
-
+    // =========================
+    // STATE
+    // =========================
     private Rigidbody2D rb;
+
+    private Vector2 targetPoint;
+    private Vector2 panicDirection;
+
+    private bool isPanicking;
+    private bool isLeaving;
+    private bool hasReported;
+
+    private float aliveTime;
+
+    // border panic timer
+    private bool touchingBorder;
+    private float borderTimer;
 
     // =========================
     // START
     // =========================
-
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
 
-       SetRandomSprite();
+        SetRandomSprite();
         PickNewTarget();
     }
 
     // =========================
     // UPDATE
     // =========================
-
-   void Update()
-{
-    aliveTime += Time.deltaTime;
-
-    if (isPanicking && touchingBorder)
+    void Update()
     {
-        borderTimer -= Time.deltaTime;
+        aliveTime += Time.deltaTime;
 
-        if (borderTimer <= 0f)
+        if (isLeaving)
         {
-            Destroy(gameObject);
+            MoveToExit();
+            return;
         }
+
+        if (isPanicking)
+        {
+            HandlePanic();
+            HandleBorderDeath();
+            return;
+        }
+
+        HandleMovement();
+        HandleLifeCycle();
     }
 
-    if (leaving)
-    {
-        MoveToExit();
-        return;
-    }
-
-    HandleMovement();
-    HandleLifeChecks();
-}
-
+    // =========================
+    // MOVEMENT
+    // =========================
     void HandleMovement()
-{
-    if (!canMove)
-        return;
-
-    if (isPanicking)
     {
-        HandlePanicMovement();
-        return;
+        if (!canMove) return;
+
+        Vector2 toTarget = targetPoint - rb.position;
+
+        if (toTarget.magnitude < stopDistance)
+        {
+            PickNewTarget();
+            return;
+        }
+
+        Vector2 next = Vector2.MoveTowards(
+            rb.position,
+            targetPoint,
+            speed * Time.deltaTime
+        );
+
+        rb.MovePosition(next + GetSeparationForce());
     }
-
-    Vector2 toTarget = targetPoint - rb.position;
-    float dist = toTarget.magnitude;
-
-    if (dist < stopDistance)
-    {
-        PickNewTarget();
-        return;
-    }
-
-    Vector2 newPos = Vector2.MoveTowards(rb.position, targetPoint, speed * Time.deltaTime);
-    Vector2 separation = GetSeparationForce() * 0.2f;
-
-    rb.MovePosition(newPos + separation * Time.deltaTime);
-}
-void HandlePanicMovement()
-{
-    rb.MovePosition(rb.position + panicDirection * panicSpeed * Time.deltaTime);
-}
 
     void PickNewTarget()
-    {
-        targetPoint = GetRandomPointInTriangle();
-    }
-
-    Vector2 GetRandomPointInTriangle()
     {
         float r1 = Random.value;
         float r2 = Random.value;
@@ -120,12 +110,11 @@ void HandlePanicMovement()
             r2 = 1 - r2;
         }
 
-        return pointA + r1 * (pointB - pointA) + r2 * (pointC - pointA);
+        targetPoint =
+            pointA +
+            r1 * (pointB - pointA) +
+            r2 * (pointC - pointA);
     }
-
-    // =========================
-    // SEPARATION (STABLE)
-    // =========================
 
     Vector2 GetSeparationForce()
     {
@@ -133,168 +122,142 @@ void HandlePanicMovement()
 
         Vector2 force = Vector2.zero;
 
-        foreach (var hit in hits)
+        foreach (var h in hits)
         {
-            if (hit.gameObject == gameObject) continue;
+            if (h.gameObject == gameObject) continue;
 
-            Vector2 diff = (Vector2)transform.position - (Vector2)hit.transform.position;
+            Vector2 diff = (Vector2)transform.position - (Vector2)h.transform.position;
             float dist = Mathf.Max(diff.magnitude, 0.1f);
 
             force += diff.normalized / dist;
         }
 
-        return force;
+        return force * 0.2f;
     }
 
     // =========================
-    // LIFE CHECKS
+    // LIFE CYCLE / REVIEWS
     // =========================
-
-    void HandleLifeChecks()
+    void HandleLifeCycle()
     {
-        if (aliveTime >= 30f && !leaving)
+        if (aliveTime >= 30f && !hasReported)
         {
             GivePositiveReview();
-            leaving = true;
+            BeginLeaving();
         }
 
-        if (happiness <= 0 && !leaving)
+        if (happiness <= 0 && !hasReported)
         {
             GiveNegativeReview();
-            leaving = true;
+            BeginLeaving();
         }
     }
 
-    // =========================
-    // EXIT
-    // =========================
+    void BeginLeaving()
+    {
+        isLeaving = true;
+    }
 
     void MoveToExit()
     {
         Vector2 exit = new Vector2(36, 51);
 
-        rb.MovePosition(Vector2.MoveTowards(rb.position, exit, speed * Time.deltaTime));
+        rb.MovePosition(
+            Vector2.MoveTowards(rb.position, exit, speed * Time.deltaTime)
+        );
 
         if (Vector2.Distance(rb.position, exit) < 1f)
-        {
             Destroy(gameObject);
-        }
     }
 
     // =========================
-    // STATUE INTERACTION
+    // DAMAGE SYSTEM
     // =========================
-
-    public void InteractWithStatue(bool isClean)
-    {
-        if (statueTriggeredThisWave)
-            return;
-
-        statueTriggeredThisWave = true;
-        canMove = false;
-
-       if (isPanicking)
-    return;
-
-if (isClean)
-    happiness = Mathf.Min(happiness + 20, 100);
-else
-{
-    happiness -= 50;
-    if (happiness < 0) happiness = 0;
-}
-
-        happiness = Mathf.Clamp(happiness, 0, 100);
-
-        PickNewTarget();
-        StartCoroutine(ResumeMovement());
-    }
-
-    IEnumerator ResumeMovement()
-    {
-        yield return new WaitForSeconds(1f);
-        canMove = true;
-    }
-
-    // =========================
-    // DAMAGE
-    // =========================
-
     public void HitBird() => ModifyHappiness(-5);
     public void HitPoop() => ModifyHappiness(-10);
     public void HitBullet() => ModifyHappiness(-20);
 
-void ModifyHappiness(int amount)
-{
-    if (isPanicking)
-        return;
-
-    happiness += amount;
-
-    if (happiness <= 0)
+    void ModifyHappiness(int amount)
     {
-        happiness = 0;
-        EnterPanicMode();
+        if (isPanicking) return;
+
+        happiness += amount;
+        happiness = Mathf.Clamp(happiness, 0, 100);
+
+        if (happiness <= 0)
+            EnterPanic();
     }
-}
 
-   void EnterPanicMode()
-{
-    isPanicking = true;
-    canMove = true;
+    void EnterPanic()
+    {
+        isPanicking = true;
+        canMove = true;
 
-    panicDirection = Random.insideUnitCircle.normalized;
-}
+        panicDirection = Random.insideUnitCircle.normalized;
+    }
 
- void GiveNegativeReview()
-{
-    if (hasReported) return;
-    hasReported = true;
+    void HandlePanic()
+    {
+        rb.MovePosition(rb.position + panicDirection * panicSpeed * Time.deltaTime);
+    }
 
-    Debug.Log("NPC left unhappy");
-}
+    void HandleBorderDeath()
+    {
+        if (!touchingBorder) return;
 
-void GivePositiveReview()
-{
-    if (hasReported) return;
-    hasReported = true;
+        borderTimer -= Time.deltaTime;
 
-    Debug.Log("NPC left happy");
-}
+        if (borderTimer <= 0f)
+            Destroy(gameObject);
+    }
+
+    // =========================
+    // REVIEWS
+    // =========================
+    void GiveNegativeReview()
+    {
+        hasReported = true;
+        Debug.Log("NPC left unhappy (negative review)");
+    }
+
+    void GivePositiveReview()
+    {
+        hasReported = true;
+        Debug.Log("NPC left happy (positive review)");
+    }
+
     // =========================
     // VISUAL
     // =========================
-
     void SetRandomSprite()
-{
-    SpriteRenderer sr = GetComponent<SpriteRenderer>();
-
-    if (sr == null)
-        return;
-
-    if (possibleSprites == null || possibleSprites.Length == 0)
-        return;
-
-    sr.sprite = possibleSprites[Random.Range(0, possibleSprites.Length)];
-}
-void OnTriggerEnter2D(Collider2D other)
-{
-    if (!isPanicking)
-        return;
-
-    if (other.CompareTag("Border"))
     {
-        touchingBorder = true;
-        borderTimer = 2f;
-    }
-}
+        var sr = GetComponent<SpriteRenderer>();
 
-void OnTriggerExit2D(Collider2D other)
-{
-    if (other.CompareTag("Border"))
-    {
-        touchingBorder = false;
-        borderTimer = 0f;
+        if (sr == null || possibleSprites.Length == 0)
+            return;
+
+        sr.sprite = possibleSprites[Random.Range(0, possibleSprites.Length)];
     }
-}
+
+    // =========================
+    // BORDER
+    // =========================
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (!isPanicking) return;
+
+        if (other.CompareTag("Border"))
+        {
+            touchingBorder = true;
+            borderTimer = 2f;
+        }
+    }
+
+    void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.CompareTag("Border"))
+        {
+            touchingBorder = false;
+        }
+    }
 }
