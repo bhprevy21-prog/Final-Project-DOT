@@ -1,5 +1,11 @@
 fileFormatVersion: 2
+<<<<<<< Updated upstream:Assets/Scenes/Quit 2.anim.meta
 guid: f4576d1cdec76844097613fbde631c5b
+=======
+guid: c5f90b4b89fc14a68b259b9d82042605
+timeCreated: 1484171803
+licenseType: Pro
+>>>>>>> Stashed changes:Assets/AllTexts/TextMesh Pro/Resources/Fonts & Materials/3D-Thirteen-Pixel-Fonts SDF.asset.meta
 NativeFormatImporter:
   externalObjects: {}
   mainObjectFileID: 7400000

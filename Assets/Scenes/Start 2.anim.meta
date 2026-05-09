@@ -1,5 +1,11 @@
 fileFormatVersion: 2
+<<<<<<< Updated upstream:Assets/Scenes/Start 2.anim.meta
 guid: cc84965ad3957b542bb83ade3a5ccc95
+=======
+guid: f75770b8010394b7b83f9919f71979d8
+timeCreated: 1484171803
+licenseType: Pro
+>>>>>>> Stashed changes:Assets/AllTexts/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset.meta
 NativeFormatImporter:
   externalObjects: {}
   mainObjectFileID: 7400000
