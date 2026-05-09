@@ -6,27 +6,18 @@ public class StatueInteraction : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (!other.CompareTag("NPC"))
-            return;
+        Debug.Log("Something entered trigger: " + other.name);
 
-        NPC npc = other.GetComponent<NPC>();
-        if (npc == null)
-            return;
-
-        Debug.Log("NPC entered statue zone");
-
-        // simple rule:
-        if (statue != null && statue.isClean)
+        if (other.CompareTag("NPC"))
         {
-            statue.Heal(20);
-            Debug.Log("Statue rewarded for clean state");
-        }
-        else if (statue != null)
-        {
-            statue.TakeDamage(50);
-            Debug.Log("Statue damaged due to dirty state");
-        }
+            Debug.Log("NPC detected in statue zone");
 
-        // let NPC handle its own logic internally
+            NPC npc = other.GetComponent<NPC>();
+            if (npc != null)
+            {
+                Debug.Log("Calling InteractWithStatue()");
+                npc.InteractWithStatue(statue.isClean);
+            }
+        }
     }
 }

@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections;
-using UnityEngine.UI;
 
 public class Turret : MonoBehaviour
 {
@@ -10,81 +9,64 @@ public class Turret : MonoBehaviour
     public GameObject bulletPrefab;
     public Transform firePoint;
     public GameObject interactPrompt;
-    public Slider batteryBar;
 
+public UnityEngine.UI.Slider batteryBar;
     private float timer = 0f;
+
     private bool playerInRangeLastFrame = false;
 
     [Header("Battery")]
-    public float maxBattery = 100f;
+    public float maxBattery = 100f; 
     public float currentBattery;
     public bool isPowered = true;
 
     [Header("Recharge")]
     public float rechargeTime = 2f;
-    public bool isRecharging = false; // public for future battery powerup use
-
-    [Header("Audio")]
-    public AudioSource rotateAudio;
-    public AudioSource rechargeAudio;
+    private bool isRecharging = false;
 
     [Header("Player Detection")]
     public float interactRange = 1f;
     private Transform player;
 
-    [Header("Health")]
-    public int health = 50;
+[Header("Health")]
+public int health = 50;
 
-    [Header("Rotation")]
-public Transform rotatePart;
-public float rotateSpeed = 360f;
+public void TakeDamage(int dmg)
+{
+    health -= dmg;
 
-    void Start()
+    if (health <= 0)
     {
-        currentBattery = maxBattery;
-
-        GameObject p = GameObject.FindGameObjectWithTag("Player");
-        if (p != null)
-            player = p.transform;
-
-        UpdateBatteryUI();
-        SetBatteryBarVisible(false);
-
-        if (rotateAudio != null)
-            rotateAudio.Stop();
-
-        if (rechargeAudio != null)
-            rechargeAudio.Stop();
+        Destroy(gameObject);
     }
+}
+  void Start()
+{
+    currentBattery = maxBattery;
+    player = GameObject.FindGameObjectWithTag("Player").transform;
+
+    UpdateBatteryUI();
+
+    SetBatteryBarVisible(false); // 👈 hidden at start
+}
 
     void Update()
     {
         timer -= Time.deltaTime;
 
+        // 🔋 If powered, allow shooting
         if (isPowered)
         {
             GameObject target = GetClosestEnemyInRange();
 
-            if (target != null)
+            if (target != null && timer <= 0f)
             {
-                RotateToward(target.transform.position);
-
-                if (timer <= 0f)
-                {
-                    Shoot(target);
-                    timer = fireCooldown;
-                }
-            }
-            else
-            {
-                StopRotateSound();
+                Shoot(target);
+                timer = fireCooldown;
             }
         }
-        else
-        {
-            StopRotateSound();
-        }
 
+        // 🔌 Check battery depletion
         if (currentBattery <= 0 && isPowered)
         {
             isPowered = false;
@@ -94,107 +76,67 @@ public float rotateSpeed = 360f;
         HandleRechargeInput();
     }
 
-    public void TakeDamage(int dmg)
-    {
-        health -= dmg;
-
-        if (health <= 0)
-            Destroy(gameObject);
-    }
-
-   void RotateToward(Vector3 targetPos)
+   void HandleRechargeInput()
 {
-    if (rotatePart == null) return;
+    if (player == null || isRecharging) return;
 
-    Vector2 dir = targetPos - rotatePart.position;
+    float dist = Vector2.Distance(transform.position, player.position);
+    bool playerInRange = dist <= interactRange;
 
-    float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-    Quaternion targetRot = Quaternion.Euler(0, 0, angle);
-
-    float angleDifference = Quaternion.Angle(rotatePart.rotation, targetRot);
-
-    rotatePart.rotation = Quaternion.RotateTowards(
-        rotatePart.rotation,
-        targetRot,
-        rotateSpeed * Time.deltaTime
-    );
-
-    if (angleDifference > 2f)
+    // 👇 ENTER RANGE
+    if (playerInRange && !playerInRangeLastFrame)
     {
-        if (rotateAudio != null && !rotateAudio.isPlaying)
-            rotateAudio.Play();
+        if (!isPowered)
+        {
+            interactPrompt.SetActive(true);
+        }
     }
-    else
+
+    // 👇 EXIT RANGE
+    if (!playerInRange && playerInRangeLastFrame)
     {
-        StopRotateSound();
+        interactPrompt.SetActive(false);
+    }
+
+    playerInRangeLastFrame = playerInRange;
+
+    // 🔌 interact
+    if (playerInRange && !isPowered && Input.GetKeyDown(KeyCode.E))
+    {
+        interactPrompt.SetActive(false); // hide during charge
+        StartCoroutine(Recharge());
     }
 }
 
-    void StopRotateSound()
+  IEnumerator Recharge()
+{
+    isRecharging = true;
+
+    SetBatteryBarVisible(true); // 👈 ensure visible during recharge
+
+    float target = maxBattery;
+
+    while (currentBattery < target)
     {
-        if (rotateAudio != null && rotateAudio.isPlaying)
-            rotateAudio.Stop();
-    }
+        currentBattery += 1f;
 
-    void HandleRechargeInput()
-    {
-        if (player == null || isRecharging) return;
-
-        float dist = Vector2.Distance(transform.position, player.position);
-        bool playerInRange = dist <= interactRange;
-
-        if (playerInRange && !playerInRangeLastFrame)
-        {
-            if (!isPowered)
-                interactPrompt.SetActive(true);
-        }
-
-        if (!playerInRange && playerInRangeLastFrame)
-        {
-            interactPrompt.SetActive(false);
-        }
-
-        playerInRangeLastFrame = playerInRange;
-
-        if (playerInRange && !isPowered && Input.GetKeyDown(KeyCode.E))
-        {
-            interactPrompt.SetActive(false);
-            StartCoroutine(Recharge());
-        }
-    }
-
-    IEnumerator Recharge()
-    {
-        isRecharging = true;
-
-        SetBatteryBarVisible(true);
-
-        if (rechargeAudio != null)
-            rechargeAudio.Play();
-
-        while (currentBattery < maxBattery)
-        {
-            currentBattery += 1f;
-
-            if (currentBattery > maxBattery)
-                currentBattery = maxBattery;
-
-            UpdateBatteryUI();
-
-            yield return new WaitForSeconds(0.05f);
-        }
-
-        if (rechargeAudio != null)
-            rechargeAudio.Stop();
-
-        isPowered = true;
-        isRecharging = false;
+        if (currentBattery > target)
+            currentBattery = target;
 
         UpdateBatteryUI();
-        SetBatteryBarVisible(false);
 
-        Debug.Log("DEBUG: Turret FULLY RECHARGED (" + currentBattery + ")");
+        yield return new WaitForSeconds(0.05f);
     }
+
+    isPowered = true;
+    isRecharging = false;
+
+    UpdateBatteryUI();
+
+    SetBatteryBarVisible(false); // 👈 hide when fully charged
+
+    Debug.Log("DEBUG: Turret FULLY RECHARGED (" + currentBattery + ")");
+}
 
     GameObject GetClosestEnemyInRange()
     {
@@ -221,23 +163,17 @@ public float rotateSpeed = 360f;
 {
     if (currentBattery <= 0) return;
 
-    Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
+    Vector2 direction = (target.transform.position - firePoint.position).normalized;
+
+    GameObject bullet = Instantiate(bulletPrefab, firePoint.position, Quaternion.identity);
+    bullet.GetComponent<Bullet>().SetDirection(direction);
 
     currentBattery -= 5f;
-    UpdateBatteryUI();
+
+    UpdateBatteryUI(); // 🔋 update bar
+
+    Debug.Log("Battery: " + currentBattery);
 }
-
-    void UpdateBatteryUI()
-    {
-        if (batteryBar != null)
-            batteryBar.value = currentBattery;
-    }
-
-    void SetBatteryBarVisible(bool visible)
-    {
-        if (batteryBar != null)
-            batteryBar.gameObject.SetActive(visible);
-    }
 
     void OnDrawGizmosSelected()
     {
@@ -247,16 +183,15 @@ public float rotateSpeed = 360f;
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(transform.position, interactRange);
     }
-    public void AddCharge(float amount)
+
+    void UpdateBatteryUI()
 {
-    currentBattery += amount;
-
-    if (currentBattery > maxBattery)
-        currentBattery = maxBattery;
-
-    if (currentBattery > 0)
-        isPowered = true;
-
-    UpdateBatteryUI();
+    if (batteryBar != null)
+        batteryBar.value = currentBattery;
+}
+void SetBatteryBarVisible(bool visible)
+{
+    if (batteryBar != null)
+        batteryBar.gameObject.SetActive(visible);
 }
 }

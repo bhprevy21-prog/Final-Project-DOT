@@ -429,8 +429,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 7, y: 133.76105}
-  m_SizeDelta: {x: 200, y: 40}
+  m_AnchoredPosition: {x: 8.0145, y: 177.8035}
+  m_SizeDelta: {x: 264.7902, y: 53.6728}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &788712532
 MonoBehaviour:
@@ -454,7 +454,7 @@ MonoBehaviour:
   m_Transition: 1
   m_Colors:
     m_NormalColor: {r: 1, g: 0, b: 0, a: 1}
-    m_HighlightedColor: {r: 0.21698111, g: 0, b: 0, a: 1}
+    m_HighlightedColor: {r: 1, g: 0.8632076, b: 0.8632076, a: 1}
     m_PressedColor: {r: 0.5834663, g: 1, b: 0, a: 1}
     m_SelectedColor: {r: 0.09451604, g: 1, b: 0, a: 1}
     m_DisabledColor: {r: 0.3773585, g: 0.3773585, b: 0.3773585, a: 0.5019608}
@@ -555,10 +555,10 @@ MonoBehaviour:
   spinner: {fileID: 1634527004}
   spinSpeed: 200
   tips:
-  - BloodWing birds are your enemies!
+  - Red-eyed birds are your enemies!
   - Keep some money in reserve.
   - Spread defenses instead of clustering them.
-  - Your citizens are valuable! You must protect them.
+  - "NPCs are valuable\u2014protect them."
   - Batteries improve machine efficiency.
   systemMessages:
   - Initializing bird systems...
@@ -574,6 +574,7 @@ MonoBehaviour:
   - Running collision checks...
   - Applying wind simulation...
   - Preparing arena state...
+  - Building Statue...
   - Activating combat mode...
   - Balancing bird stats...
   - Loading animation rigs...
@@ -582,7 +583,7 @@ MonoBehaviour:
   - Finalizing spawn points...
   - 'System ready: birds online.'
   minLoadTime: 6
-  maxLoadTime: 7
+  maxLoadTime: 8
 --- !u!4 &962204005
 Transform:
   m_ObjectHideFlags: 0
@@ -632,8 +633,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.0062256, y: -0.00097656}
-  m_SizeDelta: {x: 695.5, y: 386.5}
+  m_AnchoredPosition: {x: 1.1065, y: -0.726}
+  m_SizeDelta: {x: 916.0721, y: 516.7087}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &985398143
 MonoBehaviour:
@@ -844,10 +845,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 80294732}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0.11781182, y: 0.117000006}
+  m_AnchorMax: {x: 0.88971776, y: 1}
+  m_AnchoredPosition: {x: -5.8656, y: -30.9524}
+  m_SizeDelta: {x: 213.7278, y: 61.8952}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1356216216
 MonoBehaviour:
@@ -1008,8 +1009,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 283, y: -139}
-  m_SizeDelta: {x: 100, y: 100}
+  m_AnchoredPosition: {x: 373.425, y: -188.1933}
+  m_SizeDelta: {x: 132.3952, y: 134.1822}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1634527005
 MonoBehaviour:
@@ -1089,8 +1090,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: This is a tip trust
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 370cf6cbdc58bab41abbd1042ac4dacd, type: 2}
+  m_sharedMaterial: {fileID: -4109661539319710580, guid: 370cf6cbdc58bab41abbd1042ac4dacd, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1114,8 +1115,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 52.8
+  m_fontSizeBase: 52.8
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1180,8 +1181,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -70, y: 77}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchoredPosition: {x: -93.92971, y: 101.64024}
+  m_SizeDelta: {x: 264.7902, y: 67.0912}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1911790066
 GameObject:
@@ -1217,8 +1218,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.0025024, y: -0.00050354}
-  m_SizeDelta: {x: 695.49, y: 386.5}
+  m_AnchoredPosition: {x: -1.2566, y: -1.6806}
+  m_SizeDelta: {x: 920.7949, y: 518.6143}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1911790068
 MonoBehaviour:
@@ -1292,8 +1293,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -106, y: -164}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchoredPosition: {x: -141.5921, y: -221.73886}
+  m_SizeDelta: {x: 264.7902, y: 67.0912}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2028679875
 CanvasRenderer:
@@ -1325,8 +1326,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: You are ugly!
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 370cf6cbdc58bab41abbd1042ac4dacd, type: 2}
+  m_sharedMaterial: {fileID: -4109661539319710580, guid: 370cf6cbdc58bab41abbd1042ac4dacd, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1350,8 +1351,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 20
-  m_fontSizeBase: 20
+  m_fontSize: 42.8
+  m_fontSizeBase: 42.8
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18

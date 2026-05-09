@@ -9,10 +9,6 @@ public class Enemy : MonoBehaviour
     [Header("Avoidance")]
     public float separationRadius = 1.5f;
     public float separationStrength = 3f;
-    [Header("Death")]
-public Sprite deadSprite;
-private SpriteRenderer sr;
-private bool isDead = false;
 
     private Rigidbody2D rb;
     private Vector2 moveDir;
@@ -26,7 +22,6 @@ private bool isDead = false;
     {
         rb = GetComponent<Rigidbody2D>();
         aiPath = GetComponent<AIPath>();
-        sr = GetComponent<SpriteRenderer>();
     }
 
     void Update()
@@ -156,29 +151,4 @@ private bool isDead = false;
         Debug.Log(gameObject.name + " was DESTROYED");
         FindObjectOfType<EnemyDirectorUI>()?.ResetTimer();
     }
-    public void DieFromTurret()
-{
-    if (isDead) return;
-
-    isDead = true;
-    canBeHit = false;
-
-    if (aiPath != null)
-        aiPath.enabled = false;
-
-    if (rb != null)
-        rb.velocity = Vector2.zero;
-
-    // swap sprite
-    if (sr != null && deadSprite != null)
-        sr.sprite = deadSprite;
-
-    // disable collider so nothing weird happens
-    Collider2D col = GetComponent<Collider2D>();
-    if (col != null)
-        col.enabled = false;
-
-    // dramatic short delay
-    Destroy(gameObject, 0.35f);
-}
 }
