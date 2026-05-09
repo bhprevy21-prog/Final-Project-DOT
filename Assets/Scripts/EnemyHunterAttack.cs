@@ -166,8 +166,16 @@ public class EnemyHunterAttack : MonoBehaviour
         isDiving = false;
         rb.velocity = Vector2.zero;
 
-        move.canMove = false;
-        shoot.canShoot = false;
+        if (move.hasParkBoots)
+{
+    Debug.Log("Bird tried grabbing player, but ParkBoots blocked it.");
+
+    StartCoroutine(FailDive());
+    yield break;
+}
+
+move.canMove = false;
+shoot.canShoot = false;
 
         Vector2 randomOffset = Random.insideUnitCircle * 15f;
         Vector3 guess = transform.position + (Vector3)randomOffset;
